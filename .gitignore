@@ -1,0 +1,12 @@
+node_modules
+dist
+*.local
+snapshots
+
+# Source art (raw renders, PNG cutouts, stage screenshots). The site uses the copies
+# `npm run publish:art` writes to public/, which are committed.
+local-art/
+.venv/
+
+package-lock.json
+research

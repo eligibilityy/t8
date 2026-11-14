@@ -1,0 +1,249 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertDialog } from "@base-ui/react/alert-dialog";
+import { Dialog } from "@base-ui/react/dialog";
+import { Menu } from "@base-ui/react/menu";
+import { Tabs } from "@base-ui/react/tabs";
+import type { AppState, ArtAsset, ArtLibrary, BackgroundImage, Entry, EventInfo } from "./types";
+import { defaultState, hydrate } from "./state";
+import { applyScheme } from "./lib/placements";
+import { loadArt, loadBackground, loadState, putArt, putBackground, saveState } from "./lib/storage";
+import { isKeptOverride, resolveArt } from "./lib/artProcess";
+import { STAGES, stageBackground } from "./lib/background";
+import { downloadPng, slug } from "./lib/exportImage";
+import { FORMATS, getFormat, getTheme } from "./data/themes";
+import { BladeStandings } from "./layouts/BladeStandings";
+import { ScaledCanvas } from "./components/ScaledCanvas";
+import { Sidebar } from "./components/Sidebar";
+import { TextPostPanel } from "./components/TextPostPanel";
+import { SelectField } from "./components/ui";
+
+type Tab = "standings" | "text";
+const FORMAT_ITEMS = FORMATS.map((f) => ({ value: f.id, label: f.label }));
+
+export default function App() {
+  const [state, setState] = useState<AppState>(() => hydrate(loadState<AppState>()));
+  // Uploads and hand crops only
+  const [savedArt, setSavedArt] = useState<ArtLibrary>({});
+  const [bgImage, setBgImage] = useState<BackgroundImage | null>(null);
+  const [tab, setTab] = useState<Tab>("standings");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    void loadBackground().then((bg) => {
+      // Re-resolve built-in stages; file names change on publish
+      if (bg?.id.startsWith("stage:") && !bg.src.startsWith("data:")) {
+        const stage = STAGES.find((s) => `stage:${s.slug}` === bg.id);
+        return setBgImage(stage ? stageBackground(stage) : null);
+      }
+      setBgImage(bg);
+    });
+  }, []);
+
+  useEffect(() => {
+    void loadArt().then((lib) => {
+      const kept = Object.fromEntries(Object.entries(lib).filter(([k, a]) => !k.startsWith("__") && isKeptOverride(a)));
+      setSavedArt(kept);
+      for (const k of Object.keys(lib)) if (!(k in kept)) void putArt(k, null);
+    });
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => saveState(state), 300);
+    return () => clearTimeout(t);
+  }, [state]);
+
+  const theme = getTheme(state.themeId);
+  const format = getFormat(state.standingsFormat);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+
+  const setEvent = (patch: Partial<EventInfo>) =>
+    setState((s) => {
+      const event = { ...s.event, ...patch };
+      const entries = patch.scheme ? applyScheme(s.entries, patch.scheme) : s.entries;
+      return { ...s, event, entries };
+    });
+
+  const setEntry = (i: number, patch: Partial<Entry>) =>
+    setState((s) => ({ ...s, entries: s.entries.map((e, ei) => (ei === i ? { ...e, ...patch } : e)) }));
+
+  const moveEntry = (i: number, dir: -1 | 1) =>
+    setState((s) => {
+      const entries = [...s.entries];
+      const j = i + dir;
+      if (j < 0 || j >= entries.length) return s;
+      [entries[i], entries[j]] = [entries[j], entries[i]];
+      return { ...s, entries: applyScheme(entries, s.event.scheme) };
+    });
+
+  /** null = back to built-in art */
+  const setArtFor = (name: string, asset: ArtAsset | null) => {
+    setSavedArt((a) => {
+      const next = { ...a };
+      if (asset) next[name] = asset;
+      else delete next[name];
+      return next;
+    });
+    void putArt(name, asset);
+  };
+
+  const usedNames = useMemo(
+    () => [...new Set(state.entries.flatMap((e) => e.characters.map((c) => c.name)).filter(Boolean))],
+    [state.entries],
+  );
+  const art = useMemo(() => resolveArt(usedNames, savedArt), [usedNames, savedArt]);
+
+  const filename = useMemo(
+    () => `${slug(state.event.name)}-standings-${format.width}x${format.height}.png`,
+    [state.event.name, format],
+  );
+
+  async function exportPng() {
+    if (!canvasRef.current) return;
+    setBusy(true);
+    setError("");
+    try {
+      const node = canvasRef.current.firstElementChild as HTMLElement;
+      await downloadPng(node, format.width, format.height, filename);
+    } catch (e) {
+      setError(`Export failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="app">
+      <Sidebar
+        state={state}
+        art={art}
+        onEvent={setEvent}
+        onEntry={setEntry}
+        onMove={moveEntry}
+        onArt={setArtFor}
+        onTheme={(themeId) => setState((s) => ({ ...s, themeId }))}
+        bgImage={bgImage}
+        onBgImage={(bg) => {
+          setBgImage(bg);
+          void putBackground(bg);
+        }}
+        onBgStyle={(patch) => setState((s) => ({ ...s, background: { ...s.background, ...patch } }))}
+      />
+
+      <Tabs.Root className="stage" value={tab} onValueChange={(v) => setTab(v as Tab)}>
+        <div className="toolbar">
+          <Tabs.List className="tabs" aria-label="Output">
+            <Tabs.Tab className="tab" value="standings">
+              Standings
+            </Tabs.Tab>
+            <Tabs.Tab className="tab" value="text">
+              Text post
+            </Tabs.Tab>
+            <Tabs.Indicator className="tab-indicator" />
+          </Tabs.List>
+          <div className="toolbar-right">
+            {tab === "standings" && (
+              <>
+                <SelectField
+                  className="format-select"
+                  value={state.standingsFormat}
+                  items={FORMAT_ITEMS}
+                  onChange={(standingsFormat) => setState((s) => ({ ...s, standingsFormat }))}
+                />
+                <button type="button" className="btn primary" onClick={exportPng} disabled={busy}>
+                  {busy ? "Rendering…" : "Download PNG"}
+                </button>
+              </>
+            )}
+            <Menu.Root>
+              <Menu.Trigger className="icon-btn more" aria-label="More options">
+                ⋯
+              </Menu.Trigger>
+              <Menu.Portal>
+                <Menu.Positioner className="positioner" sideOffset={6} align="end">
+                  <Menu.Popup className="popup list-popup">
+                    <Menu.Item className="list-item" onClick={() => setAboutOpen(true)}>
+                      About this site
+                    </Menu.Item>
+                    <Menu.Item className="list-item danger" onClick={() => setConfirmReset(true)}>
+                      Reset to sample data…
+                    </Menu.Item>
+                  </Menu.Popup>
+                </Menu.Positioner>
+              </Menu.Portal>
+            </Menu.Root>
+          </div>
+        </div>
+        {error && <p className="notice warn">{error}</p>}
+
+        <Tabs.Panel className="stage-panel" value="standings">
+          <ScaledCanvas ref={canvasRef} width={format.width} height={format.height}>
+            <BladeStandings
+              event={state.event}
+              entries={state.entries}
+              art={art}
+              theme={theme}
+              format={format}
+              background={{ image: bgImage, style: state.background }}
+            />
+          </ScaledCanvas>
+        </Tabs.Panel>
+        <Tabs.Panel className="stage-panel" value="text">
+          <TextPostPanel event={state.event} entries={state.entries} />
+        </Tabs.Panel>
+      </Tabs.Root>
+
+      <Dialog.Root open={aboutOpen} onOpenChange={setAboutOpen}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="backdrop" />
+          <Dialog.Popup className="popup dialog">
+            <Dialog.Title className="dialog-title">t8.yiliya.studio</Dialog.Title>
+            <div className="about">
+              <p>
+                Make a top 8 graphic and a text post for your Tekken 8 tournament. Fill in the results, pick characters and a
+                style, then download the PNG or copy the post.
+              </p>
+              <p>
+                Everything you enter, including pictures you upload, stays in this browser. Nothing is sent to a server.
+              </p>
+              <p className="hint">
+                Fan-made and free. Not affiliated with or endorsed by Bandai Namco Entertainment. TEKKEN™8 character art and stage
+                images © Bandai Namco Entertainment Inc.
+              </p>
+            </div>
+            <div className="btn-row end">
+              <Dialog.Close className="btn">Close</Dialog.Close>
+            </div>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <AlertDialog.Root open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialog.Portal>
+          <AlertDialog.Backdrop className="backdrop" />
+          <AlertDialog.Popup className="popup dialog">
+            <AlertDialog.Title className="dialog-title">Reset to sample data?</AlertDialog.Title>
+            <AlertDialog.Description className="hint">
+              This replaces the event details, all 8 players and the style settings with the sample data. Character art and the background picture stay.
+            </AlertDialog.Description>
+            <div className="btn-row end">
+              <AlertDialog.Close className="btn">Cancel</AlertDialog.Close>
+              <button
+                type="button"
+                className="btn danger"
+                onClick={() => {
+                  setState(defaultState());
+                  setConfirmReset(false);
+                }}
+              >
+                Reset
+              </button>
+            </div>
+          </AlertDialog.Popup>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
+    </div>
+  );
+}

@@ -1,0 +1,263 @@
+{
+  "characters": {
+    "alisa": {
+      "src": "/art/tekken8/alisa.4b6c94df.webp",
+      "focusX": 56.6,
+      "focusY": 12.3,
+      "face": 0.095
+    },
+    "anna": {
+      "src": "/art/tekken8/anna.8fb9b7a1.webp",
+      "focusX": 61.2,
+      "focusY": 6,
+      "face": 0.081
+    },
+    "armor-king": {
+      "src": "/art/tekken8/armor-king.92c1900a.webp",
+      "focusX": 47.5,
+      "focusY": 9.1,
+      "face": 0.082
+    },
+    "asuka": {
+      "src": "/art/tekken8/asuka.87f8180b.webp",
+      "focusX": 44,
+      "focusY": 7.8,
+      "face": 0.081
+    },
+    "azucena": {
+      "src": "/art/tekken8/azucena.b5a238dd.webp",
+      "focusX": 46.7,
+      "focusY": 6.8,
+      "face": 0.08
+    },
+    "bob": {
+      "src": "/art/tekken8/bob.68ede180.webp",
+      "focusX": 47.7,
+      "focusY": 6.1,
+      "face": 0.096
+    },
+    "bryan": {
+      "src": "/art/tekken8/bryan.b474cfa8.webp",
+      "focusX": 43.8,
+      "focusY": 5.2,
+      "face": 0.088
+    },
+    "claudio": {
+      "src": "/art/tekken8/claudio.0ba65c55.webp",
+      "focusX": 55.7,
+      "focusY": 6.9,
+      "face": 0.085
+    },
+    "clive": {
+      "src": "/art/tekken8/clive.a0e49541.webp",
+      "focusX": 52.9,
+      "focusY": 12.1,
+      "face": 0.076
+    },
+    "devil-jin": {
+      "src": "/art/tekken8/devil-jin.007b57ba.webp",
+      "focusX": 48.9,
+      "focusY": 9.5,
+      "face": 0.08
+    },
+    "dragunov": {
+      "src": "/art/tekken8/dragunov.395ca60b.webp",
+      "focusX": 42.1,
+      "focusY": 5.7,
+      "face": 0.095
+    },
+    "eddy": {
+      "src": "/art/tekken8/eddy.ebf96d88.webp",
+      "focusX": 48.1,
+      "focusY": 9,
+      "face": 0.093
+    },
+    "fahkumram": {
+      "src": "/art/tekken8/fahkumram.7b436ffc.webp",
+      "focusX": 63.7,
+      "focusY": 7.2,
+      "face": 0.08
+    },
+    "feng": {
+      "src": "/art/tekken8/feng.d97f0af8.webp",
+      "focusX": 39.3,
+      "focusY": 12.2,
+      "face": 0.115
+    },
+    "heihachi": {
+      "src": "/art/tekken8/heihachi.5af8cc44.webp",
+      "focusX": 49.9,
+      "focusY": 12.4,
+      "face": 0.113
+    },
+    "hwoarang": {
+      "src": "/art/tekken8/hwoarang.5d3b696d.webp",
+      "focusX": 78.9,
+      "focusY": 19.8,
+      "face": 0.088
+    },
+    "jack-8": {
+      "src": "/art/tekken8/jack-8.8eaa2c5d.webp",
+      "focusX": 53.9,
+      "focusY": 11.2,
+      "face": 0.08
+    },
+    "jin": {
+      "src": "/art/tekken8/jin.2e1fd0eb.webp",
+      "focusX": 45.1,
+      "focusY": 8.6,
+      "face": 0.083
+    },
+    "jun": {
+      "src": "/art/tekken8/jun.12027081.webp",
+      "focusX": 33.8,
+      "focusY": 7.4,
+      "face": 0.086
+    },
+    "kazuya": {
+      "src": "/art/tekken8/kazuya.c7cf87f0.webp",
+      "focusX": 49.3,
+      "focusY": 9.5,
+      "face": 0.086
+    },
+    "king": {
+      "src": "/art/tekken8/king.b0726c5a.webp",
+      "focusX": 56.7,
+      "focusY": 8.5,
+      "face": 0.102
+    },
+    "kuma": {
+      "src": "/art/tekken8/kuma.0d6aafa2.webp",
+      "focusX": 48.6,
+      "focusY": 5.5,
+      "face": 0.152
+    },
+    "kunimitsu": {
+      "src": "/art/tekken8/kunimitsu.c0214e16.webp",
+      "focusX": 45.9,
+      "focusY": 8.4,
+      "face": 0.086
+    },
+    "lars": {
+      "src": "/art/tekken8/lars.748c3e42.webp",
+      "focusX": 50,
+      "focusY": 9.4,
+      "face": 0.078
+    },
+    "law": {
+      "src": "/art/tekken8/law.54cc9633.webp",
+      "focusX": 38.9,
+      "focusY": 10.5,
+      "face": 0.091
+    },
+    "lee": {
+      "src": "/art/tekken8/lee.31e9ee15.webp",
+      "focusX": 59.7,
+      "focusY": 9.8,
+      "face": 0.1
+    },
+    "leo": {
+      "src": "/art/tekken8/leo.6454d95b.webp",
+      "focusX": 60.2,
+      "focusY": 7.7,
+      "face": 0.087
+    },
+    "leroy": {
+      "src": "/art/tekken8/leroy.5dc374b9.webp",
+      "focusX": 43.5,
+      "focusY": 5.9,
+      "face": 0.089
+    },
+    "lidia": {
+      "src": "/art/tekken8/lidia.7aa2b1c5.webp",
+      "focusX": 57.6,
+      "focusY": 8.3,
+      "face": 0.1
+    },
+    "lili": {
+      "src": "/art/tekken8/lili.bdd0deb1.webp",
+      "focusX": 49.6,
+      "focusY": 6.5,
+      "face": 0.082
+    },
+    "miary-zo": {
+      "src": "/art/tekken8/miary-zo.8a5f7a39.webp",
+      "focusX": 47.5,
+      "focusY": 7.2,
+      "face": 0.095
+    },
+    "nina": {
+      "src": "/art/tekken8/nina.77a09fde.webp",
+      "focusX": 48.4,
+      "focusY": 5.6,
+      "face": 0.083
+    },
+    "panda": {
+      "src": "/art/tekken8/panda.e5762251.webp",
+      "focusX": 58,
+      "focusY": 10.8,
+      "face": 0.19
+    },
+    "paul": {
+      "src": "/art/tekken8/paul.049f182c.webp",
+      "focusX": 55.8,
+      "focusY": 7.0,
+      "face": 0.096
+    },
+    "raven": {
+      "src": "/art/tekken8/raven.002de43f.webp",
+      "focusX": 50.9,
+      "focusY": 7.1,
+      "face": 0.103
+    },
+    "reina": {
+      "src": "/art/tekken8/reina.060d1444.webp",
+      "focusX": 50.1,
+      "focusY": 7.6,
+      "face": 0.086
+    },
+    "roger-jr": {
+      "src": "/art/tekken8/roger-jr.b9d0f143.webp",
+      "focusX": 51.5,
+      "focusY": 22,
+      "face": 0.146
+    },
+    "shaheen": {
+      "src": "/art/tekken8/shaheen.0b08c139.webp",
+      "focusX": 62.9,
+      "focusY": 8,
+      "face": 0.082
+    },
+    "steve": {
+      "src": "/art/tekken8/steve.eeafb485.webp",
+      "focusX": 39.7,
+      "focusY": 8.3,
+      "face": 0.105
+    },
+    "victor": {
+      "src": "/art/tekken8/victor.8085ff08.webp",
+      "focusX": 50,
+      "focusY": 7,
+      "face": 0.087
+    },
+    "xiaoyu": {
+      "src": "/art/tekken8/xiaoyu.6837eaef.webp",
+      "focusX": 40.1,
+      "focusY": 11.4,
+      "face": 0.084
+    },
+    "yoshimitsu": {
+      "src": "/art/tekken8/yoshimitsu.984ef7d5.webp",
+      "focusX": 43,
+      "focusY": 10.3,
+      "face": 0.099
+    },
+    "zafina": {
+      "src": "/art/tekken8/zafina.d2a8ef65.webp",
+      "focusX": 29.4,
+      "focusY": 12.7,
+      "face": 0.084
+    }
+  },
+  "stages": []
+}

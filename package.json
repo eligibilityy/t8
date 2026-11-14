@@ -1,0 +1,35 @@
+{
+  "name": "t8-yiliya-studio",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "snapshot": "vite build && node scripts/snapshot.mjs snapshots",
+    "cutout": ".venv\\Scripts\\python -I scripts/cutout.py",
+    "sync:roster": "node scripts/sync-wavu.mjs",
+    "publish:art": ".venv\\Scripts\\python -I scripts/publish-art.py"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/bebas-neue": "^5.3.0",
+    "flag-icons": "^7.2.3",
+    "html-to-image": "^1.11.11",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "playwright-core": "^1.48.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  }
+}

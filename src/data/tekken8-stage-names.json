@@ -1,0 +1,89 @@
+{
+  "_note": "Tekken 8 stage names. scripts/publish-art.py matches screenshot filenames against these slugs; longer slugs come first so 'arena-underground' wins over 'arena'.",
+  "stages": [
+    {
+      "slug": "arena-underground",
+      "name": "Arena (Underground)"
+    },
+    {
+      "slug": "arena",
+      "name": "Arena"
+    },
+    {
+      "slug": "baobab-horizon",
+      "name": "Baobab Horizon"
+    },
+    {
+      "slug": "celebration-on-the-seine",
+      "name": "Celebration on the Seine"
+    },
+    {
+      "slug": "coliseum-of-fate",
+      "name": "Coliseum of Fate"
+    },
+    {
+      "slug": "descent-into-subconscious",
+      "name": "Descent into Subconscious"
+    },
+    {
+      "slug": "elegant-palace",
+      "name": "Elegant Palace"
+    },
+    {
+      "slug": "fallen-destiny",
+      "name": "Fallen Destiny"
+    },
+    {
+      "slug": "genmaji-temple",
+      "name": "Genmaji Temple"
+    },
+    {
+      "slug": "into-the-stratosphere",
+      "name": "Into the Stratosphere"
+    },
+    {
+      "slug": "midnight-siege",
+      "name": "Midnight Siege"
+    },
+    {
+      "slug": "ortiz-farm",
+      "name": "Ortiz Farm"
+    },
+    {
+      "slug": "phoenix-gate",
+      "name": "Phoenix Gate"
+    },
+    {
+      "slug": "rebel-hangar",
+      "name": "Rebel Hangar"
+    },
+    {
+      "slug": "sanctum",
+      "name": "Sanctum"
+    },
+    {
+      "slug": "seaside-resort",
+      "name": "Seaside Resort"
+    },
+    {
+      "slug": "secluded-training-ground",
+      "name": "Secluded Training Ground"
+    },
+    {
+      "slug": "subsea-lockdown",
+      "name": "Subsea Lockdown"
+    },
+    {
+      "slug": "urban-square-evening",
+      "name": "Urban Square (Evening)"
+    },
+    {
+      "slug": "urban-square",
+      "name": "Urban Square"
+    },
+    {
+      "slug": "yakushima",
+      "name": "Yakushima"
+    }
+  ]
+}
