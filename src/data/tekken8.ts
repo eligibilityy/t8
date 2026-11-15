@@ -22,8 +22,11 @@ export function normaliseName(s: string): string {
     .replace(/[^a-z0-9]/g, "");
 }
 
-/** Filename → roster name; longest match wins. */
-export function matchRosterName(filename: string, roster = TEKKEN8_ROSTER): string | null {
+/** Filename -> roster name; longest match wins. */
+export function matchRosterName(
+  filename: string,
+  roster = TEKKEN8_ROSTER,
+): string | null {
   const n = normaliseName(filename);
   const exact = roster.find((r) => normaliseName(r) === n);
   if (exact) return exact;
