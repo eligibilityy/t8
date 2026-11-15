@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ordinal, ordinalParts, schemePlacement } from "./placements";
+import { applyScheme, ordinal, ordinalParts, schemePlacement } from "./placements";
 import { buildTextPost, flagEmoji } from "./textPost";
 import { TEKKEN8_ROSTER, matchRosterName } from "../data/tekken8";
 import { builtinArt } from "./artProcess";
@@ -45,8 +45,40 @@ describe("text post", () => {
     expect(flagEmoji("x")).toBe("");
   });
   it("formats medals, keycaps, ties and meta", () => {
-    const s = defaultState();
-    const text = buildTextPost(s.event, s.entries, { handles: false, characters: true, flags: true });
+    // Own fixture, so changing the app's sample data can't break this test
+    const players: Array<[string, string, string, string[]]> = [
+      ["NVX", "Kagerou", "jp", ["Jin", "Devil Jin"]],
+      ["", "Ironclad", "kr", ["Dragunov"]],
+      ["RVN", "Mistral", "pk", ["Reina", "Kazuya"]],
+      ["", "Bulwark", "us", ["King"]],
+      ["ODA", "Hexfire", "fr", ["Lili"]],
+      ["", "Sunder", "sa", ["Bryan", "Feng", "Law"]],
+      ["KTR", "Lowkick Larry", "gb", ["Steve"]],
+      ["", "Pazuzu", "ph", ["Yoshimitsu"]],
+    ];
+    const entries = applyScheme(
+      players.map(([sponsor, tag, country, chars], i) => ({
+        id: String(i),
+        placement: 0,
+        sponsor,
+        tag,
+        country,
+        handle: "",
+        characters: chars.map((name) => ({ name })),
+      })),
+      "DE",
+    );
+    const event = {
+      ...defaultState().event,
+      name: "Iron Monsoon 2026",
+      game: "Tekken 8",
+      subtitle: "Top 8",
+      date: "Nov 1, 2026",
+      location: "Manila, PH",
+      entrants: "256",
+      hashtag: "#IronMonsoon",
+    };
+    const text = buildTextPost(event, entries, { handles: false, characters: true, flags: true });
     const lines = text.split("\n");
     expect(lines[0]).toBe("🏆 Iron Monsoon 2026 · Tekken 8 Top 8");
     expect(lines[2]).toBe("🥇 🇯🇵 NVX | Kagerou – Jin / Devil Jin");
