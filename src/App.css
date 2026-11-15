@@ -565,7 +565,11 @@ textarea.input {
   height: 64px;
   overflow: hidden;
   border-radius: 10px;
-  background: radial-gradient(120% 100% at 50% 0%, var(--ui-raised), var(--ui-bg));
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    var(--ui-raised),
+    var(--ui-bg)
+  );
   box-shadow: inset 0 0 0 1px var(--ui-edge);
   transition-property: box-shadow, transform;
   transition-duration: 120ms;
@@ -587,7 +591,9 @@ textarea.input {
   height: 100%;
   background: none;
   color: var(--ui-dim);
-  font: 22px/1 "Bebas Neue", sans-serif;
+  font:
+    22px/1 "Bebas Neue",
+    sans-serif;
 }
 .char-trigger:active .char-tile {
   transform: scale(0.96);
@@ -1269,13 +1275,17 @@ button.auto-chip {
   position: relative;
   height: 150px;
   border-radius: 8px;
-  background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+  background-image:
+    linear-gradient(to top, #000, transparent),
+    linear-gradient(to right, #fff, transparent);
   cursor: crosshair;
   touch-action: none;
   outline: none;
 }
 .sv-area:focus-visible {
-  box-shadow: 0 0 0 2px var(--ui-raised), 0 0 0 4px var(--ui-accent);
+  box-shadow:
+    0 0 0 2px var(--ui-raised),
+    0 0 0 4px var(--ui-accent);
 }
 .sv-thumb {
   position: absolute;
@@ -1283,10 +1293,14 @@ button.auto-chip {
   height: 16px;
   border: 2px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.4);
   transform: translate(-50%, -50%);
   pointer-events: none;
-  transition: width 120ms var(--ease-out), height 120ms var(--ease-out);
+  transition:
+    width 120ms var(--ease-out),
+    height 120ms var(--ease-out);
 }
 .sv-area[data-dragging] {
   cursor: none;
@@ -1308,14 +1322,25 @@ button.auto-chip {
   width: 100%;
   height: 12px;
   border-radius: 999px;
-  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+  background: linear-gradient(
+    to right,
+    #f00,
+    #ff0,
+    #0f0,
+    #0ff,
+    #00f,
+    #f0f,
+    #f00
+  );
 }
 .hue-thumb {
   width: 16px;
   height: 16px;
   border: 2px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.4);
 }
 .hue-thumb:has(:focus-visible) {
   outline: 2px solid var(--ui-accent);
@@ -1406,7 +1431,10 @@ button.auto-chip {
   transform: scale(0.9);
 }
 .swatch[data-current] {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 0 0 2px var(--ui-raised), 0 0 0 3.5px var(--ui-text);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 0 2px var(--ui-raised),
+    0 0 0 3.5px var(--ui-text);
 }
 
 /* ───────── Stage ───────── */

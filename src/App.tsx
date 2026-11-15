@@ -3,24 +3,55 @@ import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Dialog } from "@base-ui/react/dialog";
 import { Menu } from "@base-ui/react/menu";
 import { Tabs } from "@base-ui/react/tabs";
-import type { AppState, ArtAsset, ArtLibrary, BackgroundImage, Entry, EventInfo } from "./types";
+import type {
+  AppState,
+  ArtAsset,
+  ArtLibrary,
+  BackgroundImage,
+  Entry,
+  EventInfo,
+} from "./types";
 import { defaultState, hydrate } from "./state";
 import { applyScheme } from "./lib/placements";
-import { loadArt, loadBackground, loadState, putArt, putBackground, saveState } from "./lib/storage";
+import {
+  loadArt,
+  loadBackground,
+  loadState,
+  putArt,
+  putBackground,
+  saveState,
+} from "./lib/storage";
 import { isKeptOverride, resolveArt } from "./lib/artProcess";
 import { STAGES, stageBackground } from "./lib/background";
 import { downloadPng, slug } from "./lib/exportImage";
-import { FORMATS, createTheme, deleteTheme, getFormat, getTheme, restoreTheme, updateTheme } from "./data/themes";
+import {
+  FORMATS,
+  createTheme,
+  deleteTheme,
+  getFormat,
+  getTheme,
+  restoreTheme,
+  updateTheme,
+} from "./data/themes";
 import { BladeStandings } from "./layouts/BladeStandings";
 import { ScaledCanvas } from "./components/ScaledCanvas";
 import { Sidebar } from "./components/Sidebar";
 import { TextPostPanel } from "./components/TextPostPanel";
-import { CheckIcon, MoreIcon, SelectField, Spinner, SwapLabel } from "./components/ui";
+import {
+  CheckIcon,
+  MoreIcon,
+  SelectField,
+  Spinner,
+  SwapLabel,
+} from "./components/ui";
 
 type Tab = "standings" | "text";
 
 /** Resolves after the browser has painted the current state */
-const nextPaint = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+const nextPaint = () =>
+  new Promise<void>((r) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => r())),
+  );
 const FORMAT_ITEMS = FORMATS.map((f) => ({ value: f.id, label: f.label }));
 
 // Per-browser layout preference; storage can be unavailable
@@ -34,12 +65,16 @@ const readEditorHidden = () => {
 };
 
 export default function App() {
-  const [state, setState] = useState<AppState>(() => hydrate(loadState<AppState>()));
+  const [state, setState] = useState<AppState>(() =>
+    hydrate(loadState<AppState>()),
+  );
   // Uploads and hand crops only
   const [savedArt, setSavedArt] = useState<ArtLibrary>({});
   const [bgImage, setBgImage] = useState<BackgroundImage | null>(null);
   const [tab, setTab] = useState<Tab>("standings");
-  const [exportState, setExportState] = useState<"idle" | "busy" | "done">("idle");
+  const [exportState, setExportState] = useState<"idle" | "busy" | "done">(
+    "idle",
+  );
   const [error, setError] = useState("");
   const [editorHidden, setEditorHidden] = useState(readEditorHidden);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -57,7 +92,11 @@ export default function App() {
 
   useEffect(() => {
     void loadArt().then((lib) => {
-      const kept = Object.fromEntries(Object.entries(lib).filter(([k, a]) => !k.startsWith("__") && isKeptOverride(a)));
+      const kept = Object.fromEntries(
+        Object.entries(lib).filter(
+          ([k, a]) => !k.startsWith("__") && isKeptOverride(a),
+        ),
+      );
       setSavedArt(kept);
       for (const k of Object.keys(lib)) if (!(k in kept)) void putArt(k, null);
     });
@@ -76,12 +115,17 @@ export default function App() {
   const setEvent = (patch: Partial<EventInfo>) =>
     setState((s) => {
       const event = { ...s.event, ...patch };
-      const entries = patch.scheme ? applyScheme(s.entries, patch.scheme) : s.entries;
+      const entries = patch.scheme
+        ? applyScheme(s.entries, patch.scheme)
+        : s.entries;
       return { ...s, event, entries };
     });
 
   const setEntry = (i: number, patch: Partial<Entry>) =>
-    setState((s) => ({ ...s, entries: s.entries.map((e, ei) => (ei === i ? { ...e, ...patch } : e)) }));
+    setState((s) => ({
+      ...s,
+      entries: s.entries.map((e, ei) => (ei === i ? { ...e, ...patch } : e)),
+    }));
 
   const moveEntry = (i: number, dir: -1 | 1) =>
     setState((s) => {
@@ -104,13 +148,23 @@ export default function App() {
   };
 
   const usedNames = useMemo(
-    () => [...new Set(state.entries.flatMap((e) => e.characters.map((c) => c.name)).filter(Boolean))],
+    () => [
+      ...new Set(
+        state.entries
+          .flatMap((e) => e.characters.map((c) => c.name))
+          .filter(Boolean),
+      ),
+    ],
     [state.entries],
   );
-  const art = useMemo(() => resolveArt(usedNames, savedArt), [usedNames, savedArt]);
+  const art = useMemo(
+    () => resolveArt(usedNames, savedArt),
+    [usedNames, savedArt],
+  );
 
   const filename = useMemo(
-    () => `${slug(state.event.name)}-standings-${format.width}x${format.height}.png`,
+    () =>
+      `${slug(state.event.name)}-standings-${format.width}x${format.height}.png`,
     [state.event.name, format],
   );
 
@@ -124,7 +178,10 @@ export default function App() {
       const node = canvasRef.current.firstElementChild as HTMLElement;
       await downloadPng(node, format.width, format.height, filename);
       setExportState("done");
-      setTimeout(() => setExportState((s) => (s === "done" ? "idle" : s)), 1800);
+      setTimeout(
+        () => setExportState((s) => (s === "done" ? "idle" : s)),
+        1800,
+      );
     } catch (e) {
       setError(`Export failed: ${e instanceof Error ? e.message : String(e)}`);
       setExportState("idle");
@@ -152,18 +209,28 @@ export default function App() {
         onArt={setArtFor}
         onTheme={(themeId) => setState((s) => ({ ...s, themeId }))}
         onCreateTheme={() => setState((s) => createTheme(s))}
-        onUpdateTheme={(id, patch) => setState((s) => updateTheme(s, id, patch))}
+        onUpdateTheme={(id, patch) =>
+          setState((s) => updateTheme(s, id, patch))
+        }
         onDeleteTheme={(id) => setState((s) => deleteTheme(s, id))}
-        onRestoreTheme={(theme, index) => setState((s) => restoreTheme(s, theme, index))}
+        onRestoreTheme={(theme, index) =>
+          setState((s) => restoreTheme(s, theme, index))
+        }
         bgImage={bgImage}
         onBgImage={(bg) => {
           setBgImage(bg);
           void putBackground(bg);
         }}
-        onBgStyle={(patch) => setState((s) => ({ ...s, background: { ...s.background, ...patch } }))}
+        onBgStyle={(patch) =>
+          setState((s) => ({ ...s, background: { ...s.background, ...patch } }))
+        }
       />
 
-      <Tabs.Root className="stage" value={tab} onValueChange={(v) => setTab(v as Tab)}>
+      <Tabs.Root
+        className="stage"
+        value={tab}
+        onValueChange={(v) => setTab(v as Tab)}
+      >
         <div className="toolbar">
           <div className="toolbar-left">
             <button
@@ -172,7 +239,11 @@ export default function App() {
               aria-controls="editor"
               aria-expanded={!editorHidden}
               aria-label={editorHidden ? "Show editor" : "Hide editor"}
-              title={editorHidden ? "Show editor" : "Hide editor for a bigger preview"}
+              title={
+                editorHidden
+                  ? "Show editor"
+                  : "Hide editor for a bigger preview"
+              }
               onClick={toggleEditor}
             >
               <SidebarIcon />
@@ -194,7 +265,9 @@ export default function App() {
                   className="format-select"
                   value={state.standingsFormat}
                   items={FORMAT_ITEMS}
-                  onChange={(standingsFormat) => setState((s) => ({ ...s, standingsFormat }))}
+                  onChange={(standingsFormat) =>
+                    setState((s) => ({ ...s, standingsFormat }))
+                  }
                 />
                 <button
                   type="button"
@@ -227,12 +300,22 @@ export default function App() {
                 <MoreIcon />
               </Menu.Trigger>
               <Menu.Portal>
-                <Menu.Positioner className="positioner" sideOffset={6} align="end">
+                <Menu.Positioner
+                  className="positioner"
+                  sideOffset={6}
+                  align="end"
+                >
                   <Menu.Popup className="popup list-popup">
-                    <Menu.Item className="list-item" onClick={() => setAboutOpen(true)}>
+                    <Menu.Item
+                      className="list-item"
+                      onClick={() => setAboutOpen(true)}
+                    >
                       About this site
                     </Menu.Item>
-                    <Menu.Item className="list-item danger" onClick={() => setConfirmReset(true)}>
+                    <Menu.Item
+                      className="list-item danger"
+                      onClick={() => setConfirmReset(true)}
+                    >
                       Reset to sample data…
                     </Menu.Item>
                   </Menu.Popup>
@@ -244,10 +327,22 @@ export default function App() {
         {error && <p className="notice warn">{error}</p>}
 
         <p className="sr-only" role="status">
-          {exportState === "busy" ? "Rendering the PNG" : exportState === "done" ? "PNG downloaded" : ""}
+          {exportState === "busy"
+            ? "Rendering the PNG"
+            : exportState === "done"
+              ? "PNG downloaded"
+              : ""}
         </p>
-        <Tabs.Panel className="stage-panel" value="standings" data-busy={exportState === "busy" || undefined}>
-          <ScaledCanvas ref={canvasRef} width={format.width} height={format.height}>
+        <Tabs.Panel
+          className="stage-panel"
+          value="standings"
+          data-busy={exportState === "busy" || undefined}
+        >
+          <ScaledCanvas
+            ref={canvasRef}
+            width={format.width}
+            height={format.height}
+          >
             <BladeStandings
               event={state.event}
               entries={state.entries}
@@ -267,18 +362,30 @@ export default function App() {
         <Dialog.Portal>
           <Dialog.Backdrop className="backdrop" />
           <Dialog.Popup className="popup dialog">
-            <Dialog.Title className="dialog-title">t8.yiliya.studio</Dialog.Title>
+            <Dialog.Title className="dialog-title">
+              t8.yiliya.studio
+            </Dialog.Title>
             <div className="about">
               <p>
-                Make a top 8 graphic and a text post for your Tekken 8 tournament. Fill in the results, pick characters and a
-                style, then download the PNG or copy the post.
+                Top 8 graphic generator, originally made for fun by{" "}
+                <a
+                  href="https://yiliya.studio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Yiliya
+                </a>{" "}
+                for DLSL IGNIS. More supported games coming soon!
               </p>
-              <p>
-                Everything you enter, including pictures you upload, stays in this browser. Nothing is sent to a server.
-              </p>
+              <img
+                src="https://tekkenwarehouse.com/wp-content/uploads/2024/02/T_UI_STAMP_034.png"
+                width="100"
+                alt="Kuma holding his salmon"
+              />
               <p className="hint">
-                Fan-made and free. Not affiliated with or endorsed by Bandai Namco Entertainment. TEKKEN™8 character art and stage
-                images © Bandai Namco Entertainment Inc.
+                Fan-made and free. Not affiliated with or endorsed by Bandai
+                Namco Entertainment. TEKKEN™8 character art and stage images
+                &copy; Bandai Namco Entertainment Inc.
               </p>
             </div>
             <div className="btn-row end">
@@ -292,9 +399,13 @@ export default function App() {
         <AlertDialog.Portal>
           <AlertDialog.Backdrop className="backdrop" />
           <AlertDialog.Popup className="popup dialog">
-            <AlertDialog.Title className="dialog-title">Reset to sample data?</AlertDialog.Title>
+            <AlertDialog.Title className="dialog-title">
+              Reset to sample data?
+            </AlertDialog.Title>
             <AlertDialog.Description className="hint">
-              This replaces the event details, all 8 players and the style settings with the sample data. Character art, the background picture and your saved themes stay.
+              This replaces the event details, all 8 players and the style
+              settings with the sample data. Character art, the background
+              picture and your saved themes stay.
             </AlertDialog.Description>
             <div className="btn-row end">
               <AlertDialog.Close className="btn">Cancel</AlertDialog.Close>
@@ -302,7 +413,10 @@ export default function App() {
                 type="button"
                 className="btn danger"
                 onClick={() => {
-                  setState((s) => ({ ...defaultState(), customThemes: s.customThemes }));
+                  setState((s) => ({
+                    ...defaultState(),
+                    customThemes: s.customThemes,
+                  }));
                   setConfirmReset(false);
                 }}
               >
@@ -319,7 +433,16 @@ export default function App() {
 function SidebarIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <rect
+        x="1.75"
+        y="2.75"
+        width="12.5"
+        height="10.5"
+        rx="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
       <path d="M6 3v10" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );

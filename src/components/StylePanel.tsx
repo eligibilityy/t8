@@ -53,7 +53,10 @@ export function StylePanel({
   const all = [...THEMES, ...customThemes];
   const selected = all.find((t) => t.id === themeId) ?? THEMES[0];
   const bgPalette = useImagePalette(bgImage?.src);
-  const [deleted, setDeleted] = useState<{ theme: Theme; index: number } | null>(null);
+  const [deleted, setDeleted] = useState<{
+    theme: Theme;
+    index: number;
+  } | null>(null);
 
   // The undo offer goes away on its own
   useEffect(() => {
@@ -67,16 +70,34 @@ export function StylePanel({
       <div className="field-group">
         <span className="field-label">Theme</span>
         <div className="themes">
-          <RadioGroup className="themes-radios" aria-label="Theme" value={selected.id} onValueChange={(v) => onTheme(String(v))}>
+          <RadioGroup
+            className="themes-radios"
+            aria-label="Theme"
+            value={selected.id}
+            onValueChange={(v) => onTheme(String(v))}
+          >
             {all.map((t) => (
-              <Radio.Root key={t.id} value={t.id} className="theme-swatch" title={t.note ? `${t.label} (${t.note})` : t.label}>
+              <Radio.Root
+                key={t.id}
+                value={t.id}
+                className="theme-swatch"
+                title={t.note ? `${t.label} (${t.note})` : t.label}
+              >
                 <ThemePreview theme={t} />
                 <span className="theme-name">{t.label || "Untitled"}</span>
               </Radio.Root>
             ))}
           </RadioGroup>
-          <button type="button" className="theme-swatch theme-new" onClick={onCreateTheme} title="New theme from the selected one">
-            <span className="theme-preview theme-new-preview" aria-hidden="true">
+          <button
+            type="button"
+            className="theme-swatch theme-new"
+            onClick={onCreateTheme}
+            title="New theme from the selected one"
+          >
+            <span
+              className="theme-preview theme-new-preview"
+              aria-hidden="true"
+            >
               +
             </span>
             <span className="theme-name">New</span>
@@ -105,7 +126,10 @@ export function StylePanel({
           onChange={(patch) => onUpdateTheme(selected.id, patch)}
           onDuplicate={onCreateTheme}
           onDelete={() => {
-            setDeleted({ theme: selected, index: customThemes.findIndex((t) => t.id === selected.id) });
+            setDeleted({
+              theme: selected,
+              index: customThemes.findIndex((t) => t.id === selected.id),
+            });
             onDeleteTheme(selected.id);
           }}
         />
@@ -116,12 +140,44 @@ export function StylePanel({
         <BackgroundPicker bgImage={bgImage} onBgImage={onBgImage} />
         {bgImage && (
           <div className="crop-sliders">
-            <RangeField label="Shade" value={bgStyle.dim} min={0} max={1} step={0.05} onChange={(dim) => onBgStyle({ dim })} />
-            <RangeField label="Blur" value={bgStyle.blur} min={0} max={24} step={1} onChange={(blur) => onBgStyle({ blur })} />
-            <RangeField label="Position X" value={bgStyle.posX} min={0} max={100} step={1} onChange={(posX) => onBgStyle({ posX })} />
-            <RangeField label="Position Y" value={bgStyle.posY} min={0} max={100} step={1} onChange={(posY) => onBgStyle({ posY })} />
+            <RangeField
+              label="Shade"
+              value={bgStyle.dim}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(dim) => onBgStyle({ dim })}
+            />
+            <RangeField
+              label="Blur"
+              value={bgStyle.blur}
+              min={0}
+              max={24}
+              step={1}
+              onChange={(blur) => onBgStyle({ blur })}
+            />
+            <RangeField
+              label="Position X"
+              value={bgStyle.posX}
+              min={0}
+              max={100}
+              step={1}
+              onChange={(posX) => onBgStyle({ posX })}
+            />
+            <RangeField
+              label="Position Y"
+              value={bgStyle.posY}
+              min={0}
+              max={100}
+              step={1}
+              onChange={(posY) => onBgStyle({ posY })}
+            />
             <div className="btn-row">
-              <button type="button" className="btn ghost" onClick={() => onBgStyle({ ...DEFAULT_BACKGROUND })}>
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={() => onBgStyle({ ...DEFAULT_BACKGROUND })}
+              >
                 Reset adjustments
               </button>
             </div>
@@ -135,13 +191,34 @@ export function StylePanel({
 /** A tiny standings graphic in the theme's colours */
 function ThemePreview({ theme: t }: { theme: Theme }) {
   return (
-    <span className="theme-preview" aria-hidden="true" style={{ background: `radial-gradient(120% 100% at 90% 0%, ${t.bg2}, ${t.bg} 70%)` }}>
+    <span
+      className="theme-preview"
+      aria-hidden="true"
+      style={{
+        background: `radial-gradient(120% 100% at 90% 0%, ${t.bg2}, ${t.bg} 70%)`,
+      }}
+    >
       <span className="tp-title" style={{ background: t.accent }} />
       {[0, 1, 2].map((i) => (
-        <span key={i} className="tp-row" style={{ background: t.surface, boxShadow: `inset 0 -1px 0 ${t.surfaceEdge}` }}>
-          <span className="tp-place" style={{ background: i === 0 ? t.accent : t.surfaceEdge }} />
-          <span className="tp-text" style={{ background: i === 0 ? t.text : t.textDim }} />
-          {i === 0 && <span className="tp-dot" style={{ background: t.accent2 }} />}
+        <span
+          key={i}
+          className="tp-row"
+          style={{
+            background: t.surface,
+            boxShadow: `inset 0 -1px 0 ${t.surfaceEdge}`,
+          }}
+        >
+          <span
+            className="tp-place"
+            style={{ background: i === 0 ? t.accent : t.surfaceEdge }}
+          />
+          <span
+            className="tp-text"
+            style={{ background: i === 0 ? t.text : t.textDim }}
+          />
+          {i === 0 && (
+            <span className="tp-dot" style={{ background: t.accent2 }} />
+          )}
         </span>
       ))}
     </span>
@@ -163,8 +240,12 @@ function ThemeEditor({
   onDelete: () => void;
 }) {
   const custom = isCustomTheme(theme.id);
-  const lowKeys = MATCHED_COLORS.filter(({ key }) => isLow(theme, key)).map((c) => c.key);
-  const manualCount = MATCHED_COLORS.filter(({ key }) => !isAuto(theme, key)).length;
+  const lowKeys = MATCHED_COLORS.filter(({ key }) => isLow(theme, key)).map(
+    (c) => c.key,
+  );
+  const manualCount = MATCHED_COLORS.filter(
+    ({ key }) => !isAuto(theme, key),
+  ).length;
   const [matchedOpen, setMatchedOpen] = useState(false);
   // Open the matched colours when one of them needs attention
   useEffect(() => {
@@ -174,12 +255,19 @@ function ThemeEditor({
   const swatchesFor = (key: ThemeColorKey): SwatchGroup[] => [
     {
       title: "This theme",
-      colors: unique([...KEY_COLORS, ...MATCHED_COLORS].filter((c) => c.key !== key).map((c) => theme[c.key])),
+      colors: unique(
+        [...KEY_COLORS, ...MATCHED_COLORS]
+          .filter((c) => c.key !== key)
+          .map((c) => theme[c.key]),
+      ),
     },
     { title: "From the background", colors: bgPalette },
     { title: "Basics", colors: ["#ffffff", "#111111", "#0b0b0f", "#f1eee8"] },
   ];
-  const row = (c: { key: ThemeColorKey; label: string; hint: string }, aside?: ReactNode) => {
+  const row = (
+    c: { key: ThemeColorKey; label: string; hint: string },
+    aside?: ReactNode,
+  ) => {
     const check = CONTRAST_CHECKS[c.key];
     return (
       <ColorRow
@@ -189,7 +277,9 @@ function ThemeEditor({
         value={theme[c.key]}
         onChange={(hex) => onChange(setThemeColor(theme, c.key, hex))}
         swatches={swatchesFor(c.key)}
-        contrast={check && { on: theme[check.on], min: check.min, what: check.what }}
+        contrast={
+          check && { on: theme[check.on], min: check.min, what: check.what }
+        }
         aside={aside}
       />
     );
@@ -197,22 +287,27 @@ function ThemeEditor({
 
   return (
     <div className="theme-editor">
-      {custom ? (
+      {custom && (
         <div className="theme-editor-head">
-          <TextField label="Name" value={theme.label} onChange={(label) => onChange({ label })} placeholder="My theme" />
+          <TextField
+            label="Name"
+            value={theme.label}
+            onChange={(label) => onChange({ label })}
+            placeholder="My theme"
+          />
           <div className="btn-row">
             <button type="button" className="btn ghost" onClick={onDuplicate}>
               Duplicate
             </button>
-            <button type="button" className="btn ghost danger" onClick={onDelete}>
+            <button
+              type="button"
+              className="btn ghost danger"
+              onClick={onDelete}
+            >
               Delete
             </button>
           </div>
         </div>
-      ) : (
-        <p className="hint">
-          <strong>{theme.label}</strong> is built in. Change any colour and it's saved as your own copy.
-        </p>
       )}
 
       <div className="color-group">
@@ -220,7 +315,11 @@ function ThemeEditor({
         {KEY_COLORS.map((c) => row(c))}
       </div>
 
-      <Collapsible.Root className="color-group" open={matchedOpen} onOpenChange={setMatchedOpen}>
+      <Collapsible.Root
+        className="color-group"
+        open={matchedOpen}
+        onOpenChange={setMatchedOpen}
+      >
         <Collapsible.Trigger className="matched-trigger">
           <span className="color-group-title">Matched colours</span>
           <span className="matched-chips" aria-hidden="true">
@@ -228,13 +327,22 @@ function ThemeEditor({
               <span key={c.key} style={{ background: theme[c.key] }} />
             ))}
           </span>
-          <span className="matched-summary" data-warn={lowKeys.length || undefined}>
-            {lowKeys.length ? `${lowKeys.length} hard to read` : manualCount ? `${manualCount} set by hand` : "Automatic"}
+          <span
+            className="matched-summary"
+            data-warn={lowKeys.length || undefined}
+          >
+            {lowKeys.length
+              ? `${lowKeys.length} hard to read`
+              : manualCount
+                ? `${manualCount} set by hand`
+                : "Automatic"}
           </span>
           <ChevronIcon />
         </Collapsible.Trigger>
         <Collapsible.Panel className="matched-panel">
-          <p className="hint">These follow your key colours. Change one to set it yourself.</p>
+          <p className="hint">
+            These follow your key colours, but you can set them manually.
+          </p>
           {MATCHED_COLORS.map((c) => {
             const auto = isAuto(theme, c.key);
             const low = isLow(theme, c.key);
@@ -242,8 +350,16 @@ function ThemeEditor({
               c,
               <span className="color-aside">
                 {low && (
-                  <span className="contrast-warn" title={`Hard to read ${CONTRAST_CHECKS[c.key]!.what}`}>
-                    <WarnIcon /> {contrastRatio(theme[c.key], theme[CONTRAST_CHECKS[c.key]!.on]).toFixed(1)}:1
+                  <span
+                    className="contrast-warn"
+                    title={`Hard to read ${CONTRAST_CHECKS[c.key]!.what}`}
+                  >
+                    <WarnIcon />{" "}
+                    {contrastRatio(
+                      theme[c.key],
+                      theme[CONTRAST_CHECKS[c.key]!.on],
+                    ).toFixed(1)}
+                    :1
                   </span>
                 )}
                 {auto ? (
@@ -266,8 +382,6 @@ function ThemeEditor({
           })}
         </Collapsible.Panel>
       </Collapsible.Root>
-
-      <p className="hint">{custom ? "Changes save automatically in this browser." : "Your copy appears next to the built-in themes."}</p>
     </div>
   );
 }
@@ -296,7 +410,10 @@ function useImagePalette(src: string | undefined): string[] {
       if (!ctx) return;
       ctx.drawImage(img, 0, 0, c.width, c.height);
       try {
-        const colors = paletteFromPixels(ctx.getImageData(0, 0, c.width, c.height).data, 6);
+        const colors = paletteFromPixels(
+          ctx.getImageData(0, 0, c.width, c.height).data,
+          6,
+        );
         if (alive) setPalette(colors);
       } catch {
         /* cross-origin picture: no swatches */
@@ -313,8 +430,19 @@ function useImagePalette(src: string | undefined): string[] {
 function WarnIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-      <path d="M6 1.5l5 9H1z" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-      <path d="M6 5v2.4M6 8.9v.1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path
+        d="M6 1.5l5 9H1z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6 5v2.4M6 8.9v.1"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -333,7 +461,13 @@ function LinkIcon() {
   );
 }
 
-function BackgroundPicker({ bgImage, onBgImage }: { bgImage: BackgroundImage | null; onBgImage: (bg: BackgroundImage | null) => void }) {
+function BackgroundPicker({
+  bgImage,
+  onBgImage,
+}: {
+  bgImage: BackgroundImage | null;
+  onBgImage: (bg: BackgroundImage | null) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -359,27 +493,60 @@ function BackgroundPicker({ bgImage, onBgImage }: { bgImage: BackgroundImage | n
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger className="bg-current" aria-label="Choose background">
-        {bgImage ? <img src={bgImage.src} alt="" /> : <span className="bg-none-swatch" />}
+        {bgImage ? (
+          <img src={bgImage.src} alt="" />
+        ) : (
+          <span className="bg-none-swatch" />
+        )}
         <span className="bg-current-text">
           <span>{bgImage ? bgImage.label : "Plain"}</span>
-          <span className="hint">{bgImage ? (bgImage.id === "upload" ? "Your picture" : "Stage") : "Theme colours only"} · Change…</span>
+          <span className="hint">
+            {bgImage
+              ? bgImage.id === "upload"
+                ? "Your picture"
+                : "Stage"
+              : "Theme colours only"}{" "}
+            · Change…
+          </span>
         </span>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner className="positioner" side="right" align="start" sideOffset={10} collisionPadding={12}>
+        <Popover.Positioner
+          className="positioner"
+          side="right"
+          align="start"
+          sideOffset={10}
+          collisionPadding={12}
+        >
           <Popover.Popup className="popup bg-popup">
             <div className="art-popup-head">
-              <Popover.Title className="art-popup-title">Background</Popover.Title>
-              <span className="hint">{STAGES.length ? "Pick a stage or use your own picture." : "Use your own picture: a venue photo, a stage screenshot, key art…"}</span>
+              <Popover.Title className="art-popup-title">
+                Background
+              </Popover.Title>
+              <span className="hint">
+                {STAGES.length
+                  ? "Pick a stage or use your own picture."
+                  : "Use your own picture: a venue photo, a stage screenshot, key art…"}
+              </span>
             </div>
 
             <div className="bg-grid">
-              <button type="button" className="bg-option" data-selected={!bgImage || undefined} onClick={() => choose(null)}>
+              <button
+                type="button"
+                className="bg-option"
+                data-selected={!bgImage || undefined}
+                onClick={() => choose(null)}
+              >
                 <span className="bg-none-swatch" />
                 <span className="bg-option-name">Plain</span>
               </button>
               {bgImage?.id === "upload" && (
-                <button type="button" className="bg-option" data-selected onClick={() => setOpen(false)}>
+                <button
+                  type="button"
+                  className="bg-option"
+                  data-selected
+                  onClick={() => setOpen(false)}
+                >
                   <img src={bgImage.src} alt="" />
                   <span className="bg-option-name">Your picture</span>
                 </button>
