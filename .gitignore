@@ -10,3 +10,4 @@ local-art/
 
 package-lock.json
 research
+.vercel
