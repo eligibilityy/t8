@@ -34,6 +34,14 @@
       "name": "Fallen Destiny"
     },
     {
+      "slug": "genmaji-temple-evening",
+      "name": "Genmaji Temple (Evening)"
+    },
+    {
+      "slug": "genmaji-temple-night",
+      "name": "Genmaji Temple (Night)"
+    },
+    {
       "slug": "genmaji-temple",
       "name": "Genmaji Temple"
     },
@@ -46,8 +54,16 @@
       "name": "Midnight Siege"
     },
     {
+      "slug": "ortiz-farm-2",
+      "name": "Ortiz Farm (Alt view)"
+    },
+    {
       "slug": "ortiz-farm",
       "name": "Ortiz Farm"
+    },
+    {
+      "slug": "pac-pixels",
+      "name": "Pac-Pixels"
     },
     {
       "slug": "phoenix-gate",

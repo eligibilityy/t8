@@ -259,5 +259,150 @@
       "face": 0.084
     }
   },
-  "stages": []
+  "stages": [
+    {
+      "slug": "arena",
+      "name": "Arena",
+      "src": "/stages/arena.25430a50.jpg",
+      "thumb": "/stages/arena.thumb.88c6c9fc.jpg"
+    },
+    {
+      "slug": "arena-underground",
+      "name": "Arena (Underground)",
+      "src": "/stages/arena-underground.b035576c.jpg",
+      "thumb": "/stages/arena-underground.thumb.4a9b49e0.jpg"
+    },
+    {
+      "slug": "baobab-horizon",
+      "name": "Baobab Horizon",
+      "src": "/stages/baobab-horizon.a3cf6cd7.jpg",
+      "thumb": "/stages/baobab-horizon.thumb.e69e7311.jpg"
+    },
+    {
+      "slug": "celebration-on-the-seine",
+      "name": "Celebration on the Seine",
+      "src": "/stages/celebration-on-the-seine.b4026409.jpg",
+      "thumb": "/stages/celebration-on-the-seine.thumb.dd23d216.jpg"
+    },
+    {
+      "slug": "coliseum-of-fate",
+      "name": "Coliseum of Fate",
+      "src": "/stages/coliseum-of-fate.9e970ec1.jpg",
+      "thumb": "/stages/coliseum-of-fate.thumb.7b317e5d.jpg"
+    },
+    {
+      "slug": "descent-into-subconscious",
+      "name": "Descent into Subconscious",
+      "src": "/stages/descent-into-subconscious.a4c6197d.jpg",
+      "thumb": "/stages/descent-into-subconscious.thumb.d25db20a.jpg"
+    },
+    {
+      "slug": "elegant-palace",
+      "name": "Elegant Palace",
+      "src": "/stages/elegant-palace.67397b93.jpg",
+      "thumb": "/stages/elegant-palace.thumb.6b8743b7.jpg"
+    },
+    {
+      "slug": "fallen-destiny",
+      "name": "Fallen Destiny",
+      "src": "/stages/fallen-destiny.4c2951de.jpg",
+      "thumb": "/stages/fallen-destiny.thumb.ea533981.jpg"
+    },
+    {
+      "slug": "genmaji-temple",
+      "name": "Genmaji Temple",
+      "src": "/stages/genmaji-temple.6580ea9d.jpg",
+      "thumb": "/stages/genmaji-temple.thumb.df3ceb5f.jpg"
+    },
+    {
+      "slug": "genmaji-temple-evening",
+      "name": "Genmaji Temple (Evening)",
+      "src": "/stages/genmaji-temple-evening.3b6a9ef4.jpg",
+      "thumb": "/stages/genmaji-temple-evening.thumb.f60660b9.jpg"
+    },
+    {
+      "slug": "genmaji-temple-night",
+      "name": "Genmaji Temple (Night)",
+      "src": "/stages/genmaji-temple-night.2ad4e99c.jpg",
+      "thumb": "/stages/genmaji-temple-night.thumb.d2abc242.jpg"
+    },
+    {
+      "slug": "midnight-siege",
+      "name": "Midnight Siege",
+      "src": "/stages/midnight-siege.f69c4bf4.jpg",
+      "thumb": "/stages/midnight-siege.thumb.4b54dc7b.jpg"
+    },
+    {
+      "slug": "ortiz-farm",
+      "name": "Ortiz Farm",
+      "src": "/stages/ortiz-farm.1cc33453.jpg",
+      "thumb": "/stages/ortiz-farm.thumb.d258d909.jpg"
+    },
+    {
+      "slug": "ortiz-farm-2",
+      "name": "Ortiz Farm (Alt view)",
+      "src": "/stages/ortiz-farm-2.a2053162.jpg",
+      "thumb": "/stages/ortiz-farm-2.thumb.acfc1a0e.jpg"
+    },
+    {
+      "slug": "pac-pixels",
+      "name": "Pac-Pixels",
+      "src": "/stages/pac-pixels.6ccd16dd.jpg",
+      "thumb": "/stages/pac-pixels.thumb.c514a0a1.jpg"
+    },
+    {
+      "slug": "phoenix-gate",
+      "name": "Phoenix Gate",
+      "src": "/stages/phoenix-gate.20ed3d8f.jpg",
+      "thumb": "/stages/phoenix-gate.thumb.e326e3d2.jpg"
+    },
+    {
+      "slug": "rebel-hangar",
+      "name": "Rebel Hangar",
+      "src": "/stages/rebel-hangar.cd605eb5.jpg",
+      "thumb": "/stages/rebel-hangar.thumb.a420fd20.jpg"
+    },
+    {
+      "slug": "sanctum",
+      "name": "Sanctum",
+      "src": "/stages/sanctum.6b07dc17.jpg",
+      "thumb": "/stages/sanctum.thumb.c31672cf.jpg"
+    },
+    {
+      "slug": "seaside-resort",
+      "name": "Seaside Resort",
+      "src": "/stages/seaside-resort.3056e873.jpg",
+      "thumb": "/stages/seaside-resort.thumb.f4a4dc60.jpg"
+    },
+    {
+      "slug": "secluded-training-ground",
+      "name": "Secluded Training Ground",
+      "src": "/stages/secluded-training-ground.47876bf7.jpg",
+      "thumb": "/stages/secluded-training-ground.thumb.f02660fa.jpg"
+    },
+    {
+      "slug": "subsea-lockdown",
+      "name": "Subsea Lockdown",
+      "src": "/stages/subsea-lockdown.23a1f0df.jpg",
+      "thumb": "/stages/subsea-lockdown.thumb.1057361c.jpg"
+    },
+    {
+      "slug": "urban-square",
+      "name": "Urban Square",
+      "src": "/stages/urban-square.7c87bddb.jpg",
+      "thumb": "/stages/urban-square.thumb.de6bc27f.jpg"
+    },
+    {
+      "slug": "urban-square-evening",
+      "name": "Urban Square (Evening)",
+      "src": "/stages/urban-square-evening.2be54860.jpg",
+      "thumb": "/stages/urban-square-evening.thumb.4d6d39da.jpg"
+    },
+    {
+      "slug": "yakushima",
+      "name": "Yakushima",
+      "src": "/stages/yakushima.18022166.jpg",
+      "thumb": "/stages/yakushima.thumb.eb0512da.jpg"
+    }
+  ]
 }
