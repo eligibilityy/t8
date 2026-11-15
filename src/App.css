@@ -940,9 +940,93 @@ textarea.input {
   width: 100%;
 }
 .scaled-frame {
+  position: relative;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   border: 1px solid var(--ui-edge);
+  user-select: none;
+  /* Vertical swipes still scroll the page; pinches come to us */
+  touch-action: pan-y;
+}
+.scaled-frame[data-zoomed] {
+  touch-action: none;
+  cursor: grab;
+}
+.scaled-frame[data-dragging] {
+  cursor: grabbing;
+}
+.scaled-frame:focus-visible {
+  outline-offset: 3px;
+}
+.scaled-content {
+  transform-origin: 0 0;
+}
+
+/* Zoom row under the preview */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 100%;
+  margin-top: 10px;
+}
+.zoom-controls .hint {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zoom-pill {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--ui-edge);
+  border-radius: 999px;
+  background: var(--ui-panel);
+}
+.zoom-pill button {
+  height: 26px;
+  min-width: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ui-text);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition-property: background-color, transform;
+  transition-duration: 120ms;
+  transition-timing-function: var(--ease-out);
+}
+.zoom-pill .zoom-level {
+  min-width: 52px;
+  color: var(--ui-dim);
+  font-size: 12px;
+}
+.zoom-pill button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.zoom-pill button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+@media (hover: hover) {
+  .zoom-pill button:hover:not(:disabled) {
+    background: var(--ui-raised);
+  }
+}
+@media (pointer: coarse) {
+  .zoom-pill button {
+    height: 36px;
+    min-width: 40px;
+  }
+  .zoom-pill .zoom-level {
+    min-width: 60px;
+  }
 }
 
 /* ───────── Text post ───────── */

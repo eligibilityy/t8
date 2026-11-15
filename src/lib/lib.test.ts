@@ -3,6 +3,7 @@ import { ordinal, ordinalParts, schemePlacement } from "./placements";
 import { buildTextPost, flagEmoji } from "./textPost";
 import { matchRosterName } from "../data/tekken8";
 import { defaultState } from "../state";
+import { FIT, clampView, project, rubberband, softPan, zoomAt, type Box } from "./panZoom";
 import { THEMES, contrastRatio, getTheme, hydrateCustomThemes, isCustomTheme, newCustomTheme, normalizeHex } from "../data/themes";
 
 describe("placements", () => {
@@ -170,5 +171,39 @@ describe("custom themes", () => {
   it("contrast ratio", () => {
     expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 0);
     expect(contrastRatio("#777777", "#777777")).toBe(1);
+  });
+});
+
+describe("preview zoom", () => {
+  // 1920×1080 graphic shown at 0.5 in a 960×540 frame, up to 4× fit (200% real size)
+  const b: Box = { width: 1920, height: 1080, frameW: 960, frameH: 540, fit: 0.5, maxZ: 4 };
+
+  it("zooms around the given point", () => {
+    const v = zoomAt(b, FIT, 2, 300, 200);
+    // the graphic spot under (300, 200) stays under it
+    const before = { x: (300 - FIT.x) / (0.5 * FIT.z), y: (200 - FIT.y) / (0.5 * FIT.z) };
+    const after = { x: (300 - v.x) / (0.5 * v.z), y: (200 - v.y) / (0.5 * v.z) };
+    expect(after.x).toBeCloseTo(before.x);
+    expect(after.y).toBeCloseTo(before.y);
+  });
+  it("never zooms out past fit or in past the limit", () => {
+    expect(zoomAt(b, FIT, 0.2, 0, 0)).toEqual(FIT);
+    expect(zoomAt(b, FIT, 99, 0, 0).z).toBe(4);
+  });
+  it("keeps the graphic covering the frame", () => {
+    const v = clampView(b, { z: 2, x: 500, y: -5000 });
+    expect(v.x).toBe(0);
+    expect(v.y).toBe(540 - 1080); // bottom edge meets the frame
+  });
+  it("resists past the edges", () => {
+    expect(softPan(50, -500, 0, 960)).toBeGreaterThan(0);
+    expect(softPan(50, -500, 0, 960)).toBeLessThan(50);
+    expect(softPan(-200, -500, 0, 960)).toBe(-200);
+    expect(rubberband(1e6, 960)).toBeLessThan(960);
+  });
+  it("projects a flick forward", () => {
+    expect(project(1000)).toBeCloseTo(499, 0);
+    expect(project(-1000)).toBeCloseTo(-499, 0);
+    expect(project(0)).toBe(0);
   });
 });
