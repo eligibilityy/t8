@@ -1,4 +1,5 @@
-# t8.yiliya.studio
+t8.yiliya.studio
+================
 
 Make a Tekken 8 top 8 graphic and text post for your tournament, in the browser. Live at [t8.yiliya.studio](https://t8.yiliya.studio).
 
@@ -6,7 +7,8 @@ Originally made as a fun project for DLSL IGNIS T8 Tourneys
 
 ![Screenshot of UI](preview.png)
 
-## Features
+Features
+--------
 
 - Standings graphic in 16:9 (1920×1080) and 4:5 (1080×1350), exported as PNG
 - Text post with medals, flags, handles and characters
@@ -15,11 +17,13 @@ Originally made as a fun project for DLSL IGNIS T8 Tourneys
 - Double elim, single elim or custom placements
 - No account or server: everything is saved in your browser
 
-## Stack
+Stack
+--------
 
 React 18, TypeScript, Vite, Base UI, html-to-image, Vitest
 
-## Development
+Development
+--------
 
 Requires Node 18+.
 
@@ -47,10 +51,12 @@ npm run publish:art  # cutouts and stages -> public/
 npm run sync:roster  # update roster names from Wavu Wiki
 ```
 
-## To do
+To do
+--------
 
 - [ ] Support more games beyond Tekken 8
 
-## Disclaimer
+Disclaimer
+--------
 
 Fan-made. Not affiliated with or endorsed by Bandai Namco Entertainment. TEKKEN™8 character art and stage images © Bandai Namco Entertainment Inc.
