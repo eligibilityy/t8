@@ -34,7 +34,9 @@ function importApi(): Plugin {
 }
 
 export default defineConfig(({ mode }) => {
-  // STARTGG_TOKEN / CHALLONGE_API_KEY for the import endpoint (never sent to the browser)
-  for (const [k, v] of Object.entries(loadEnv(mode, process.cwd(), ""))) process.env[k] ??= v;
+  // Bracket-site keys for the import endpoint (never sent to the browser). Not in tests:
+  // they stub their own, and real keys would change what the tests exercise.
+  if (mode !== "test")
+    for (const [k, v] of Object.entries(loadEnv(mode, process.cwd(), ""))) process.env[k] ??= v;
   return { plugins: [react(), importApi()] };
 });
