@@ -59,9 +59,11 @@ npm run sync:roster  # update roster names from Wavu Wiki
 | Variable | Where to get it |
 |---|---|
 | `STARTGG_TOKEN` | start.gg → Developer Settings → Personal Access Tokens |
-| `CHALLONGE_API_KEY` | challonge.com → Developer Settings (API key) |
+| `CHALLONGE_CLIENT_ID`, `CHALLONGE_CLIENT_SECRET` | Challonge Developer Portal ([connect.challonge.com](https://connect.challonge.com)) → your app |
 
-start.gg allows about 80 requests a minute per token; an import uses 2 or 3. Challonge's free API tier allows 500 requests a month. Repeat lookups of the same link within a minute are answered from Vercel's cache.
+Challonge uses API v2.1 with the app's client credentials. A legacy account key in `CHALLONGE_API_KEY` also works if the client ID and secret aren't set.
+
+start.gg allows about 80 requests a minute per token; an import uses 2 or 3. Challonge's free API tier allows 500 requests a month; an import uses 2 for brackets up to 100 entrants, plus one per extra 100. Repeat lookups of the same link within a minute are answered from Vercel's cache.
 
 To do
 --------
