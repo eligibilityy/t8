@@ -80,8 +80,10 @@ code {
   cursor: pointer;
   text-align: left;
 }
-.section-trigger:hover {
-  background: var(--ui-raised);
+@media (hover: hover) {
+  .section-trigger:hover {
+    background: var(--ui-raised);
+  }
 }
 .section-title {
   font-weight: 600;
@@ -152,8 +154,10 @@ code {
   outline: none;
   transition: border-color 120ms;
 }
-.input:hover {
-  border-color: var(--ui-edge-strong);
+@media (hover: hover) {
+  .input:hover {
+    border-color: var(--ui-edge-strong);
+  }
 }
 .input:focus,
 .input:focus-within {
@@ -309,10 +313,12 @@ textarea.input {
   padding: 0;
   color: var(--ui-dim);
 }
-.btn:hover:not(:disabled),
-.icon-btn:hover:not(:disabled) {
-  background: #262832;
-  color: var(--ui-text);
+@media (hover: hover) {
+  .btn:hover:not(:disabled),
+  .icon-btn:hover:not(:disabled) {
+    background: #262832;
+    color: var(--ui-text);
+  }
 }
 .btn:disabled,
 .icon-btn:disabled {
@@ -324,8 +330,10 @@ textarea.input {
   border-color: var(--ui-accent);
   color: #fff;
 }
-.btn.primary:hover:not(:disabled) {
-  background: #ff2477;
+@media (hover: hover) {
+  .btn.primary:hover:not(:disabled) {
+    background: #ff2477;
+  }
 }
 .btn.ghost {
   background: transparent;
@@ -463,9 +471,13 @@ textarea.input {
   cursor: pointer;
   text-align: center;
 }
-.art-thumb:hover,
 .art-thumb[data-popup-open] {
   border-color: var(--ui-accent);
+}
+@media (hover: hover) {
+  .art-thumb:hover {
+    border-color: var(--ui-accent);
+  }
 }
 .art-thumb[data-missing] {
   border-color: rgba(255, 181, 71, 0.55);
@@ -580,9 +592,13 @@ textarea.input {
   text-align: left;
   cursor: pointer;
 }
-.bg-current:hover,
 .bg-current[data-popup-open] {
   border-color: var(--ui-accent);
+}
+@media (hover: hover) {
+  .bg-current:hover {
+    border-color: var(--ui-accent);
+  }
 }
 .bg-current > img,
 .bg-current > .bg-none-swatch {
@@ -638,8 +654,10 @@ textarea.input {
   font: inherit;
   cursor: pointer;
 }
-.bg-option:hover:not(:disabled) {
-  border-color: var(--ui-edge-strong);
+@media (hover: hover) {
+  .bg-option:hover:not(:disabled) {
+    border-color: var(--ui-edge-strong);
+  }
 }
 .bg-option[data-selected] {
   border-color: var(--ui-accent);
@@ -973,5 +991,60 @@ textarea.input {
     flex: 1 1 140px;
     width: auto;
     min-width: 0;
+  }
+}
+
+/* ───────── Touch: bigger targets, no iOS focus zoom ───────── */
+@media (pointer: coarse) {
+  /* iOS zooms into inputs under 16px */
+  .input,
+  .suggest-input,
+  .select-trigger,
+  .textpost textarea {
+    font-size: 16px;
+  }
+  .input,
+  .player .input,
+  .btn {
+    height: 40px;
+  }
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .more {
+    width: 40px;
+    height: 40px;
+  }
+  .tab {
+    height: 34px;
+  }
+  .place-badge {
+    width: 40px;
+    height: 40px;
+  }
+  .place-field {
+    width: 52px;
+  }
+  .section-trigger {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .list-item {
+    padding: 10px;
+  }
+  .color-field {
+    grid-template-columns: 36px 1fr 104px;
+  }
+  .color-swatch {
+    width: 36px;
+    height: 36px;
+  }
+  .color-hex {
+    height: 36px;
+  }
+  .checkbox {
+    width: 22px;
+    height: 22px;
   }
 }
