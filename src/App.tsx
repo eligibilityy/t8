@@ -10,7 +10,7 @@ import { loadArt, loadBackground, loadState, putArt, putBackground, saveState } 
 import { isKeptOverride, resolveArt } from "./lib/artProcess";
 import { STAGES, stageBackground } from "./lib/background";
 import { downloadPng, slug } from "./lib/exportImage";
-import { FORMATS, THEMES, getFormat, getTheme, newCustomTheme } from "./data/themes";
+import { FORMATS, createTheme, deleteTheme, getFormat, getTheme, restoreTheme, updateTheme } from "./data/themes";
 import { BladeStandings } from "./layouts/BladeStandings";
 import { ScaledCanvas } from "./components/ScaledCanvas";
 import { Sidebar } from "./components/Sidebar";
@@ -151,22 +151,10 @@ export default function App() {
         onMove={moveEntry}
         onArt={setArtFor}
         onTheme={(themeId) => setState((s) => ({ ...s, themeId }))}
-        onCreateTheme={() =>
-          setState((s) => {
-            const t = newCustomTheme(getTheme(s.themeId, s.customThemes), s.customThemes);
-            return { ...s, customThemes: [...s.customThemes, t], themeId: t.id };
-          })
-        }
-        onUpdateTheme={(id, patch) =>
-          setState((s) => ({ ...s, customThemes: s.customThemes.map((t) => (t.id === id ? { ...t, ...patch } : t)) }))
-        }
-        onDeleteTheme={(id) =>
-          setState((s) => ({
-            ...s,
-            customThemes: s.customThemes.filter((t) => t.id !== id),
-            themeId: s.themeId === id ? THEMES[0].id : s.themeId,
-          }))
-        }
+        onCreateTheme={() => setState((s) => createTheme(s))}
+        onUpdateTheme={(id, patch) => setState((s) => updateTheme(s, id, patch))}
+        onDeleteTheme={(id) => setState((s) => deleteTheme(s, id))}
+        onRestoreTheme={(theme, index) => setState((s) => restoreTheme(s, theme, index))}
         bgImage={bgImage}
         onBgImage={(bg) => {
           setBgImage(bg);

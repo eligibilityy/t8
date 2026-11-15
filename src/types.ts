@@ -54,6 +54,8 @@ export type Theme = {
   label: string;
   /** Colour summary for built-ins, e.g. "magenta / cyan" */
   note?: string;
+  /** Matched colours the user set by hand; the rest follow the key colours */
+  manual?: string[];
   bg: string;
   bg2: string;
   surface: string;

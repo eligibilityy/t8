@@ -19,6 +19,7 @@ type Props = {
   onCreateTheme: () => void;
   onUpdateTheme: (id: string, patch: Partial<Theme>) => void;
   onDeleteTheme: (id: string) => void;
+  onRestoreTheme: (theme: Theme, index: number) => void;
   bgImage: BackgroundImage | null;
   onBgImage: (bg: BackgroundImage | null) => void;
   onBgStyle: (patch: Partial<BackgroundStyle>) => void;

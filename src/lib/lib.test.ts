@@ -5,7 +5,9 @@ import { TEKKEN8_ROSTER, matchRosterName } from "../data/tekken8";
 import { builtinArt } from "./artProcess";
 import { defaultState } from "../state";
 import { FIT, clampView, project, rubberband, softPan, zoomAt, type Box } from "./panZoom";
+import { MATCHED_COLORS, createTheme, deleteTheme, deriveColor, isAuto, resetThemeColor, restoreTheme, setThemeColor, updateTheme } from "../data/themes";
 import { bestOn, hexToHsv, hsvToHex, mix, paletteFromPixels } from "./color";
+import type { Theme } from "../types";
 import { THEMES, contrastRatio, getTheme, hydrateCustomThemes, isCustomTheme, newCustomTheme, normalizeHex } from "../data/themes";
 
 describe("placements", () => {
@@ -148,10 +150,11 @@ describe("custom themes", () => {
   it("copies the base theme under a new name", () => {
     const t = newCustomTheme(THEMES[1], []);
     expect(isCustomTheme(t.id)).toBe(true);
-    expect(t.label).toBe("My theme 1");
+    expect(t.label).toBe("My theme");
     expect(t.accent).toBe(THEMES[1].accent);
     expect(t.note).toBeUndefined();
-    expect(newCustomTheme(t, [t]).label).toBe("My theme 1 copy");
+    expect(newCustomTheme(t, [t]).label).toBe("My theme copy");
+    expect(newCustomTheme(THEMES[1], [t]).label).toBe("My theme 2");
   });
   it("drops malformed saved themes and bad colours", () => {
     const got = hydrateCustomThemes([
@@ -234,5 +237,65 @@ describe("colour maths", () => {
     expect(pal[0]).toBe("#dc1e28");
     expect(pal).toContain("#1e3cdc");
     expect(pal).not.toContain("#000000");
+  });
+});
+
+describe("matched theme colours", () => {
+  const heat = THEMES[0];
+  it("follow the key colour they depend on", () => {
+    const patch = setThemeColor({ ...heat, manual: [] }, "accent", "#d7ff1f");
+    expect(patch.accent).toBe("#d7ff1f");
+    expect(patch.accentInk).toBe("#111111"); // dark text on a light accent
+    expect(patch.bg2).toBe(deriveColor("bg2", { ...heat, accent: "#d7ff1f" }));
+    expect(patch.surface).toBeUndefined(); // panels don't depend on the accent
+  });
+  it("keep white on vivid accents like the built-in themes", () => {
+    for (const t of THEMES.filter((t) => t.accentInk === "#ffffff")) expect(deriveColor("accentInk", t)).toBe("#ffffff");
+  });
+  it("leave hand-set colours alone", () => {
+    const patch = setThemeColor({ ...heat, manual: ["accentInk"] }, "accent", "#d7ff1f");
+    expect(patch.accentInk).toBeUndefined();
+  });
+  it("follow chains: background → text → small text", () => {
+    const patch = setThemeColor({ ...heat, manual: [] }, "bg", "#f1eee8");
+    expect(patch.text).toBe("#111111");
+    expect(patch.textDim).toBe(mix("#111111", "#f1eee8", 0.42));
+  });
+  it("setting one by hand marks it, matching again clears it", () => {
+    const t = { ...heat, manual: [] as string[] };
+    const set = { ...t, ...setThemeColor(t, "textDim", "#ff0000") };
+    expect(isAuto(set, "textDim")).toBe(false);
+    const back = { ...set, ...resetThemeColor(set, "textDim") };
+    expect(isAuto(back, "textDim")).toBe(true);
+    expect(back.textDim).toBe(deriveColor("textDim", back));
+  });
+});
+
+describe("theme list", () => {
+  const base = { themeId: "heat", customThemes: [] as Theme[] };
+  it("editing a built-in saves a copy and selects it", () => {
+    const s = updateTheme(base, "heat", { accent: "#00ff00" });
+    expect(s.customThemes).toHaveLength(1);
+    expect(s.customThemes[0].label).toBe("Custom Heat");
+    expect(s.customThemes[0].accent).toBe("#00ff00");
+    expect(s.themeId).toBe(s.customThemes[0].id);
+    expect(THEMES[0].accent).not.toBe("#00ff00");
+    // A second edit updates the copy instead of making another
+    const s2 = updateTheme(s, s.themeId, { accent: "#0000ff" });
+    expect(s2.customThemes).toHaveLength(1);
+    expect(s2.customThemes[0].accent).toBe("#0000ff");
+  });
+  it("undo puts a deleted theme back in place", () => {
+    let s = createTheme(createTheme(base));
+    const [a, b] = s.customThemes;
+    s = deleteTheme(s, a.id);
+    expect(s.customThemes.map((t) => t.id)).toEqual([b.id]);
+    s = restoreTheme(s, a, 0);
+    expect(s.customThemes.map((t) => t.id)).toEqual([a.id, b.id]);
+    expect(s.themeId).toBe(a.id);
+  });
+  it("themes saved before matching keep their colours as set", () => {
+    const [t] = hydrateCustomThemes([{ id: "custom-x", label: "Old", accent: "#00ff00" }]);
+    expect(MATCHED_COLORS.every(({ key }) => !isAuto(t, key))).toBe(true);
   });
 });
