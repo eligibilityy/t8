@@ -5,6 +5,7 @@ import { TEKKEN8_ROSTER, matchRosterName } from "../data/tekken8";
 import { builtinArt } from "./artProcess";
 import { defaultState } from "../state";
 import { FIT, clampView, project, rubberband, softPan, zoomAt, type Box } from "./panZoom";
+import { bestOn, hexToHsv, hsvToHex, mix, paletteFromPixels } from "./color";
 import { THEMES, contrastRatio, getTheme, hydrateCustomThemes, isCustomTheme, newCustomTheme, normalizeHex } from "../data/themes";
 
 describe("placements", () => {
@@ -213,5 +214,25 @@ describe("built-in art", () => {
   it("every roster character has a face thumbnail", () => {
     const missing = TEKKEN8_ROSTER.filter((n) => !builtinArt(n)?.thumb?.includes(".face."));
     expect(missing).toEqual([]);
+  });
+});
+
+describe("colour maths", () => {
+  it("round-trips hex through HSV", () => {
+    for (const hex of ["#f50a64", "#3fd1e7", "#000000", "#ffffff", "#7f7f7f", "#c9a45c"]) expect(hsvToHex(hexToHsv(hex))).toBe(hex);
+  });
+  it("mixes and measures", () => {
+    expect(mix("#000000", "#ffffff", 0.5)).toBe("#808080");
+    expect(bestOn("#d7ff1f", ["#ffffff", "#111111"])).toBe("#111111");
+    expect(bestOn("#0b0b0f", ["#ffffff", "#111111"])).toBe("#ffffff");
+  });
+  it("finds a background's main colours", () => {
+    // 3/4 red, 1/4 blue, plus black that should be ignored
+    const px = (r: number, g: number, b: number, n: number) => Array.from({ length: n }, () => [r, g, b, 255]).flat();
+    const data = new Uint8ClampedArray([...px(220, 30, 40, 300), ...px(30, 60, 220, 100), ...px(0, 0, 0, 200)]);
+    const pal = paletteFromPixels(data, 4);
+    expect(pal[0]).toBe("#dc1e28");
+    expect(pal).toContain("#1e3cdc");
+    expect(pal).not.toContain("#000000");
   });
 });
