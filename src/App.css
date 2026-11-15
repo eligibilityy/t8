@@ -1143,3 +1143,27 @@ textarea.input {
     height: 22px;
   }
 }
+
+/* ───────── Reduced motion: keep fades and feedback, drop movement ───────── */
+@media (prefers-reduced-motion: reduce) {
+  .popup[data-starting-style],
+  .popup[data-ending-style],
+  .swap-item {
+    transform: none;
+  }
+  .dialog[data-starting-style],
+  .dialog[data-ending-style] {
+    transform: translate(-50%, -50%);
+  }
+  .swap-item {
+    filter: none;
+  }
+  .section-panel,
+  .section-trigger svg,
+  .tab-indicator {
+    transition: none;
+  }
+  .spinner {
+    animation-duration: 1.6s;
+  }
+}
