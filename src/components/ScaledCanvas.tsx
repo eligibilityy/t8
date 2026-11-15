@@ -17,6 +17,8 @@ const STACKED_QUERY = "(max-width: 900px), (max-height: 480px)";
 const MAX_REAL = 2;
 const STEP = 1.5;
 const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+/** Frame border, both sides */
+const BORDER = 2;
 
 type Point = { x: number; y: number };
 type Gesture =
@@ -40,6 +42,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
   function ScaledCanvas({ width, height, children }, ref) {
     const outer = useRef<HTMLDivElement>(null);
     const frame = useRef<HTMLDivElement>(null);
+    const controls = useRef<HTMLDivElement>(null);
     const content = useRef<HTMLDivElement>(null);
     const [fit, setFit] = useState(0.5);
     const [zoom, setZoom] = useState(1);
@@ -53,10 +56,18 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       const el = outer.current;
       if (!el) return;
       const update = () => {
-        // Side by side the preview must fit under the toolbar; stacked, the page scrolls, so allow most of the screen
-        const stacked = window.matchMedia(STACKED_QUERY).matches;
-        const maxH = stacked ? window.innerHeight * 0.9 : window.innerHeight - 236;
-        setFit(Math.min(el.clientWidth / width, maxH / height, 1));
+        // Stacked, the page scrolls, so allow most of the screen. Side by side, fill the space
+        // between the toolbar and the bottom of the window, leaving room for the zoom row.
+        let maxH = window.innerHeight * 0.9;
+        if (!window.matchMedia(STACKED_QUERY).matches) {
+          const stage = el.closest<HTMLElement>(".stage");
+          const top = el.getBoundingClientRect().top + (stage?.scrollTop ?? 0);
+          const padBottom = stage ? parseFloat(getComputedStyle(stage).paddingBottom) : 24;
+          const row = controls.current;
+          const rowH = row ? row.offsetHeight + parseFloat(getComputedStyle(row).marginTop) : 46;
+          maxH = window.innerHeight - top - rowH - padBottom;
+        }
+        setFit(Math.max(0.05, Math.min((el.clientWidth - BORDER) / width, (maxH - BORDER) / height, 1)));
       };
       update();
       const ro = new ResizeObserver(update);
@@ -280,7 +291,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
         <div
           ref={frame}
           className="scaled-frame"
-          style={{ width: width * fit, height: height * fit }}
+          style={{ width: width * fit + BORDER, height: height * fit + BORDER }}
           data-zoomed={zoomed || undefined}
           tabIndex={0}
           role="group"
@@ -296,7 +307,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
           </div>
         </div>
 
-        <div className="zoom-controls" style={{ width: width * fit }}>
+        <div ref={controls} className="zoom-controls" style={{ width: width * fit + BORDER }}>
           <span className="hint">{hint}</span>
           <div className="zoom-pill" role="group" aria-label="Zoom">
             <button type="button" aria-label="Zoom out" disabled={!zoomed} onClick={() => zoomBy(1 / STEP, center(), 260)}>
