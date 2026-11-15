@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Checkbox } from "@base-ui/react/checkbox";
 import type { Entry, EventInfo } from "../types";
 import { buildTextPost } from "../lib/textPost";
+import { SwapLabel } from "./ui";
 
 export function TextPostPanel({
   event,
@@ -15,20 +16,21 @@ export function TextPostPanel({
     handles: true,
     characters: true,
   });
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "done" | "blocked">("idle");
   const text = useMemo(
     () => buildTextPost(event, entries, opts),
     [event, entries, opts],
   );
 
   async function copy() {
+    let next: typeof copyState = "done";
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
     } catch {
-      /* clipboard blocked */
+      next = "blocked";
     }
+    setCopyState(next);
+    setTimeout(() => setCopyState((s) => (s === next ? "idle" : s)), 1800);
   }
 
   return (
@@ -57,9 +59,12 @@ export function TextPostPanel({
         rows={16}
         onFocus={(e) => e.currentTarget.select()}
       />
+      <p className="sr-only" role="status">
+        {copyState === "done" ? "Post text copied" : copyState === "blocked" ? "Couldn't copy. Select the text and copy it yourself." : ""}
+      </p>
       <div className="btn-row">
         <button type="button" className="btn primary" onClick={copy}>
-          {copied ? "Copied" : "Copy post text"}
+          <SwapLabel state={copyState} labels={{ idle: "Copy post text", done: "Copied ✓", blocked: "Couldn't copy" }} />
         </button>
       </div>
     </div>

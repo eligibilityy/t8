@@ -193,6 +193,24 @@ export function ColorField({ label, value, onChange }: { label: string; value: s
   );
 }
 
+/**
+ * Button label that cross-fades between states. Every label sits in the same grid cell,
+ * so the button is always as wide as the longest one and never jumps.
+ */
+export function SwapLabel<K extends string>({ state, labels }: { state: K; labels: Record<K, ReactNode> }) {
+  return (
+    <span className="swap">
+      {(Object.keys(labels) as K[]).map((k) => (
+        <span key={k} className="swap-item" data-active={k === state || undefined} aria-hidden={k !== state || undefined}>
+          {labels[k]}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+export const Spinner = () => <span className="spinner" aria-hidden="true" />;
+
 export function ChevronIcon() {
   return (
     <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">

@@ -15,9 +15,12 @@ import { BladeStandings } from "./layouts/BladeStandings";
 import { ScaledCanvas } from "./components/ScaledCanvas";
 import { Sidebar } from "./components/Sidebar";
 import { TextPostPanel } from "./components/TextPostPanel";
-import { SelectField } from "./components/ui";
+import { SelectField, Spinner, SwapLabel } from "./components/ui";
 
 type Tab = "standings" | "text";
+
+/** Resolves after the browser has painted the current state */
+const nextPaint = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 const FORMAT_ITEMS = FORMATS.map((f) => ({ value: f.id, label: f.label }));
 
 export default function App() {
@@ -26,7 +29,7 @@ export default function App() {
   const [savedArt, setSavedArt] = useState<ArtLibrary>({});
   const [bgImage, setBgImage] = useState<BackgroundImage | null>(null);
   const [tab, setTab] = useState<Tab>("standings");
-  const [busy, setBusy] = useState(false);
+  const [exportState, setExportState] = useState<"idle" | "busy" | "done">("idle");
   const [error, setError] = useState("");
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -101,16 +104,19 @@ export default function App() {
   );
 
   async function exportPng() {
-    if (!canvasRef.current) return;
-    setBusy(true);
+    if (!canvasRef.current || exportState === "busy") return;
+    setExportState("busy");
     setError("");
     try {
+      // Rendering blocks the main thread; let the busy state paint first
+      await nextPaint();
       const node = canvasRef.current.firstElementChild as HTMLElement;
       await downloadPng(node, format.width, format.height, filename);
+      setExportState("done");
+      setTimeout(() => setExportState((s) => (s === "done" ? "idle" : s)), 1800);
     } catch (e) {
       setError(`Export failed: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setBusy(false);
+      setExportState("idle");
     }
   }
 
@@ -168,8 +174,25 @@ export default function App() {
                   items={FORMAT_ITEMS}
                   onChange={(standingsFormat) => setState((s) => ({ ...s, standingsFormat }))}
                 />
-                <button type="button" className="btn primary" onClick={exportPng} disabled={busy}>
-                  {busy ? "Rendering…" : "Download PNG"}
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={exportPng}
+                  aria-disabled={exportState === "busy" || undefined}
+                  data-busy={exportState === "busy" || undefined}
+                >
+                  <SwapLabel
+                    state={exportState}
+                    labels={{
+                      idle: "Download PNG",
+                      busy: (
+                        <>
+                          <Spinner /> Rendering
+                        </>
+                      ),
+                      done: "Downloaded ✓",
+                    }}
+                  />
                 </button>
               </>
             )}
@@ -194,7 +217,10 @@ export default function App() {
         </div>
         {error && <p className="notice warn">{error}</p>}
 
-        <Tabs.Panel className="stage-panel" value="standings">
+        <p className="sr-only" role="status">
+          {exportState === "busy" ? "Rendering the PNG" : exportState === "done" ? "PNG downloaded" : ""}
+        </p>
+        <Tabs.Panel className="stage-panel" value="standings" data-busy={exportState === "busy" || undefined}>
           <ScaledCanvas ref={canvasRef} width={format.width} height={format.height}>
             <BladeStandings
               event={state.event}
