@@ -13,8 +13,10 @@
   --ui-warn: #ffb547;
   --ui-radius: 7px;
   --ui-font: "Inter Variable", system-ui, sans-serif;
-  /* Strong ease-out: moves right away, settles softly */
+  /* Strong ease-out: moves right away, settles softly. For things appearing. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Strong ease-in-out: for things moving from one place to another */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   color-scheme: dark;
 }
 * {
@@ -107,7 +109,7 @@ code {
 .section-trigger svg {
   flex: none;
   color: var(--ui-dim);
-  transition: transform 150ms ease;
+  transition: transform 200ms var(--ease-out);
 }
 .section-trigger[data-panel-open] svg {
   transform: rotate(180deg);
@@ -115,7 +117,7 @@ code {
 .section-panel {
   height: var(--accordion-panel-height);
   overflow: hidden;
-  transition: height 160ms ease-out;
+  transition: height 200ms var(--ease-out);
 }
 .section-panel[data-starting-style],
 .section-panel[data-ending-style] {
@@ -243,12 +245,18 @@ textarea.input {
   border-radius: 10px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   transform-origin: var(--transform-origin);
-  transition: opacity 120ms, transform 120ms;
+  transition-property: opacity, transform;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out);
 }
 .popup[data-starting-style],
 .popup[data-ending-style] {
   opacity: 0;
   transform: scale(0.97);
+}
+/* Leaving is quicker than arriving */
+.popup[data-ending-style] {
+  transition-duration: 100ms;
 }
 .list-popup {
   min-width: var(--anchor-width);
@@ -901,12 +909,15 @@ textarea.input {
 .tab-indicator {
   position: absolute;
   top: var(--active-tab-top);
-  left: var(--active-tab-left);
+  left: 0;
   width: var(--active-tab-width);
   height: var(--active-tab-height);
   border-radius: 6px;
   background: var(--ui-accent);
-  transition: left 180ms ease, width 180ms ease;
+  transform: translateX(var(--active-tab-left));
+  transition-property: transform, width;
+  transition-duration: 220ms;
+  transition-timing-function: var(--ease-in-out);
 }
 .toolbar-right {
   display: flex;
@@ -989,7 +1000,10 @@ textarea.input {
   inset: 0;
   z-index: 60;
   background: rgba(0, 0, 0, 0.55);
-  transition: opacity 150ms;
+  transition: opacity 200ms var(--ease-out);
+}
+.backdrop[data-ending-style] {
+  transition-duration: 150ms;
 }
 .backdrop[data-starting-style],
 .backdrop[data-ending-style] {
@@ -1006,6 +1020,7 @@ textarea.input {
   flex-direction: column;
   gap: 10px;
   transform: translate(-50%, -50%);
+  transition-duration: 200ms;
 }
 .dialog[data-starting-style],
 .dialog[data-ending-style] {
