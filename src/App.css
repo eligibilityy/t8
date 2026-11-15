@@ -13,6 +13,8 @@
   --ui-warn: #ffb547;
   --ui-radius: 7px;
   --ui-font: "Inter Variable", system-ui, sans-serif;
+  /* Strong ease-out: moves right away, settles softly */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   color-scheme: dark;
 }
 * {
@@ -300,7 +302,6 @@ textarea.input {
   border-radius: var(--ui-radius);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 120ms, border-color 120ms;
 }
 .btn {
   height: 32px;
@@ -324,6 +325,29 @@ textarea.input {
 .icon-btn:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+/* Press feedback: shrink slightly the moment it's pressed */
+.btn,
+.icon-btn,
+.theme-swatch,
+.art-thumb,
+.bg-option,
+.bg-current {
+  transition-property: background-color, border-color, color, box-shadow, transform;
+  transition-duration: 120ms;
+  transition-timing-function: var(--ease-out);
+}
+.btn:active:not(:disabled),
+.icon-btn:active:not(:disabled),
+.theme-swatch:active,
+.art-thumb:active,
+.bg-option:active:not(:disabled) {
+  transform: scale(0.97);
+}
+/* Wide card: a smaller squeeze reads the same */
+.bg-current:active {
+  transform: scale(0.985);
 }
 .btn.primary {
   background: var(--ui-accent);
