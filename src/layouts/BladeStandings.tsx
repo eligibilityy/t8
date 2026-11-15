@@ -227,11 +227,15 @@ export function BladeStandings(p: LayoutProps) {
 
 const SITE_URL = "t8.yiliya.studio";
 
-/** Hashtag · URL · subtitle. Without a hashtag the URL moves to the left; a blank URL shows the site's address. */
+/**
+ * Hashtag · site address · subtitle. Without a hashtag the address moves to the left.
+ * The bracket link isn't shown: full links (start.gg/tournament/…/event/…) run too long for the
+ * bar. It still goes in the text post.
+ */
 function Footer({ event, height }: { event: EventInfo; height: number }) {
   const raw = event.hashtag.trim();
   const hashtag = raw && (raw.startsWith("#") ? raw : `#${raw}`);
-  const url = event.url.trim() || SITE_URL;
+  const url = SITE_URL;
 
   // Each item is its own grid cell so the URL isn't baseline-locked to the Bebas text
   return (
