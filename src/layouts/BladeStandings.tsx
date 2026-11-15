@@ -137,12 +137,26 @@ export function BladeStandings(p: LayoutProps) {
         <Disclaimer usesGameArt={usesArt} gameName={p.event.game} />
       </div>
 
-      <footer className="blade-footer" style={{ height: m.footerH }}>
-        <span>{p.event.hashtag ? (p.event.hashtag.startsWith("#") ? p.event.hashtag : `#${p.event.hashtag}`) : p.event.name}</span>
-        <span className="mono">{p.event.url}</span>
-        <span>{p.event.subtitle || "RESULTS"}</span>
-      </footer>
+      <Footer event={p.event} height={m.footerH} />
     </div>
+  );
+}
+
+const SITE_URL = "t8.yiliya.studio";
+
+/** Hashtag · URL · subtitle. Without a hashtag the URL moves to the left; a blank URL shows the site's address. */
+function Footer({ event, height }: { event: EventInfo; height: number }) {
+  const raw = event.hashtag.trim();
+  const hashtag = raw && (raw.startsWith("#") ? raw : `#${raw}`);
+  const url = event.url.trim() || SITE_URL;
+
+  // Each item is its own grid cell so the URL isn't baseline-locked to the Bebas text
+  return (
+    <footer className="blade-footer" style={{ height }}>
+      {hashtag && <span className="left">{hashtag}</span>}
+      <span className={`mono ${hashtag ? "center" : "left"}`}>{url}</span>
+      <span className="right">{event.subtitle.trim() || "RESULTS"}</span>
+    </footer>
   );
 }
 
