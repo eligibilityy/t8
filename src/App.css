@@ -221,18 +221,6 @@ textarea.input {
 .flag-chip.empty {
   border: 1px dashed var(--ui-edge-strong);
 }
-.art-dot {
-  flex: none;
-  order: 2;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ui-warn);
-}
-.art-dot[data-ok] {
-  background: var(--ui-ok);
-}
-
 /* ───────── Popups (Select, Autocomplete, Menu, Popover) ───────── */
 .positioner {
   z-index: 50;
@@ -532,8 +520,181 @@ textarea.input {
 .handle-input {
   flex: 1;
 }
-.chars .char-input {
-  flex: 1;
+
+/* ───────── Characters (portrait tiles + picker) ───────── */
+.char-slots {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.char-slot {
+  position: relative;
+  width: 64px;
+  /* Horizontal drags reorder; vertical swipes still scroll */
+  touch-action: pan-y;
+}
+.char-slots[data-dragging] {
+  cursor: grabbing;
+}
+.char-slots[data-dragging] .char-slot:not([data-lifted]) {
+  transition: transform 180ms var(--ease-out);
+}
+.char-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.char-trigger:focus-visible {
+  outline: none;
+}
+.char-tile {
+  position: relative;
+  display: block;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: radial-gradient(120% 100% at 50% 0%, var(--ui-raised), var(--ui-bg));
+  box-shadow: inset 0 0 0 1px var(--ui-edge);
+  transition-property: box-shadow, transform;
+  transition-duration: 120ms;
+  transition-timing-function: var(--ease-out);
+}
+.char-face {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Portraits aren't draggable images: a press on one starts our reorder drag */
+.char-tile img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.char-tile .art-placeholder {
+  width: 100%;
+  height: 100%;
+  background: none;
+  color: var(--ui-dim);
+  font: 22px/1 "Bebas Neue", sans-serif;
+}
+.char-trigger:active .char-tile {
+  transform: scale(0.96);
+}
+.char-trigger:focus-visible .char-tile,
+.char-trigger[data-popup-open] .char-tile {
+  box-shadow: inset 0 0 0 2px var(--ui-accent);
+}
+.char-slot[data-lifted] .char-tile {
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 2px var(--ui-accent);
+}
+@media (hover: hover) {
+  .char-trigger:hover .char-tile {
+    box-shadow: inset 0 0 0 1px var(--ui-edge-strong);
+  }
+  .char-trigger:hover .char-add {
+    color: var(--ui-text);
+  }
+}
+.char-add {
+  display: grid;
+  place-items: center;
+  background: none;
+  box-shadow: none;
+  border: 1px dashed var(--ui-edge-strong);
+  color: var(--ui-dim);
+}
+.char-main {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: var(--ui-accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.char-name {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--ui-dim);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.char-popup {
+  width: min(360px, calc(100vw - 24px));
+  padding: 12px;
+}
+.char-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.char-grid {
+  display: grid;
+  /* Keep in sync with COLS in CharacterSlots.tsx */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  max-height: min(312px, calc(var(--available-height, 400px) - 120px));
+  margin: 0 -4px;
+  padding: 2px 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.char-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px 2px 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.char-option .char-tile {
+  width: 56px;
+  height: 56px;
+  border-radius: 9px;
+}
+.char-option .char-name {
+  text-align: center;
+}
+.char-option[data-active] {
+  background: var(--ui-accent-soft);
+}
+.char-option[data-active] .char-name {
+  color: var(--ui-text);
+}
+.char-option[aria-selected="true"] .char-tile {
+  box-shadow: inset 0 0 0 2px var(--ui-accent);
+}
+.char-option[aria-disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+.char-option.custom .char-name {
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* ───────── Art ───────── */

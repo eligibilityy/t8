@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 import { NumberField } from "@base-ui/react/number-field";
 import countryData from "flag-icons/country.json";
 import type { ArtLibrary, Entry, PlacementScheme } from "../types";
-import { TEKKEN8_ROSTER } from "../data/tekken8";
 import { SuggestInput } from "./ui";
+import { CharacterSlots } from "./CharacterSlots";
 
 type Props = {
   entries: Entry[];
@@ -140,31 +140,7 @@ export function PlayerList({ entries, scheme, art, onChange, onMove }: Props) {
             />
           </div>
 
-          <div className="player-row chars">
-            {[0, 1, 2].map((ci) => {
-              const c = e.characters[ci];
-              if (!c && ci > e.characters.length) return null;
-              const name = c?.name ?? "";
-              const hasArt = !!(name && art[name]);
-              return (
-                <SuggestInput<string>
-                  key={ci}
-                  className="char-input"
-                  ariaLabel={ci === 0 ? "Main character" : `Character ${ci + 1}`}
-                  placeholder={ci === 0 ? "Main" : "+ character"}
-                  value={name}
-                  items={TEKKEN8_ROSTER}
-                  itemToString={(n) => n}
-                  adornment={name ? <span className="art-dot" data-ok={hasArt || undefined} title={hasArt ? "Art ready" : "No art yet"} /> : null}
-                  onChange={(v) => {
-                    const chars = [...e.characters];
-                    chars[ci] = { name: v };
-                    onChange(i, { characters: chars.filter((x, xi) => x.name || xi === 0) });
-                  }}
-                />
-              );
-            })}
-          </div>
+          <CharacterSlots characters={e.characters} art={art} onChange={(characters) => onChange(i, { characters })} />
         </li>
       ))}
     </ol>
