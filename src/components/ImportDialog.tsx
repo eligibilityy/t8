@@ -1,7 +1,11 @@
 import { useRef, useState, type FormEvent } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { builtinArt } from "../lib/artProcess";
-import { countryCode, rosterName, type ImportedResults } from "../lib/importResults";
+import {
+  countryCode,
+  rosterName,
+  type ImportedResults,
+} from "../lib/importResults";
 import { ordinal } from "../lib/placements";
 import { CharacterFace } from "./CharacterSlots";
 import { Spinner, SwapLabel } from "./ui";
@@ -32,13 +36,19 @@ export function ImportDialog({
     setError("");
     setResult(null);
     try {
-      const res = await fetch(`/api/import?url=${encodeURIComponent(value.trim())}`);
-      const body = (await res.json().catch(() => ({}))) as ImportedResults & { error?: string };
+      const res = await fetch(
+        `/api/import?url=${encodeURIComponent(value.trim())}`,
+      );
+      const body = (await res.json().catch(() => ({}))) as ImportedResults & {
+        error?: string;
+      };
       if (id !== request.current) return;
-      if (!res.ok || body.error) setError(body.error ?? `Import failed (HTTP ${res.status}).`);
+      if (!res.ok || body.error)
+        setError(body.error ?? `Import failed (HTTP ${res.status}).`);
       else setResult(body);
     } catch {
-      if (id === request.current) setError("Couldn't reach the import service. Check your connection.");
+      if (id === request.current)
+        setError("Couldn't reach the import service. Check your connection.");
     } finally {
       if (id === request.current) setBusy(false);
     }
@@ -62,11 +72,13 @@ export function ImportDialog({
     >
       <Dialog.Portal>
         <Dialog.Backdrop className="backdrop" />
-        <Dialog.Popup className="popup dialog import-dialog" initialFocus={input}>
+        <Dialog.Popup
+          className="popup dialog import-dialog"
+          initialFocus={input}
+        >
           <Dialog.Title className="dialog-title">Import results</Dialog.Title>
           <Dialog.Description className="hint">
-            Paste a start.gg or Challonge link. This site looks it up for you, and you'll see the top 8
-            before anything changes.
+            Accepts start.gg and challonge.com.
           </Dialog.Description>
 
           <form className="import-form" onSubmit={onSubmit}>
@@ -94,7 +106,12 @@ export function ImportDialog({
                 }
               }}
             />
-            <button type="submit" className="btn" disabled={busy || !link.trim()} data-busy={busy || undefined}>
+            <button
+              type="submit"
+              className="btn"
+              disabled={busy || !link.trim()}
+              data-busy={busy || undefined}
+            >
               <SwapLabel
                 state={busy ? "busy" : "idle"}
                 labels={{
@@ -141,7 +158,13 @@ export function ImportDialog({
 }
 
 function ImportPreview({ result: r }: { result: ImportedResults }) {
-  const meta = [r.event.date, r.event.location, r.event.entrants && `${r.event.entrants} entrants`].filter(Boolean).join(" · ");
+  const meta = [
+    r.event.date,
+    r.event.location,
+    r.event.entrants && `${r.event.entrants} entrants`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <div className="import-preview" aria-live="polite">
       <div className="import-event">
@@ -156,7 +179,11 @@ function ImportPreview({ result: r }: { result: ImportedResults }) {
           return (
             <li key={i} className="import-player">
               <span className="import-place">{ordinal(p.placement)}</span>
-              {code ? <span className={`fi fi-${code} flag-chip`} title={p.country} /> : <span className="flag-chip empty" />}
+              {code ? (
+                <span className={`fi fi-${code} flag-chip`} title={p.country} />
+              ) : (
+                <span className="flag-chip empty" />
+              )}
               <span className="import-name">
                 {p.prefix && <span className="import-prefix">{p.prefix}</span>}
                 {p.tag}
@@ -166,7 +193,11 @@ function ImportPreview({ result: r }: { result: ImportedResults }) {
                   const name = rosterName(c);
                   return (
                     <span key={c} className="char-tile" title={name}>
-                      <CharacterFace name={name} art={builtinArt(name)} size={26} />
+                      <CharacterFace
+                        name={name}
+                        art={builtinArt(name)}
+                        size={26}
+                      />
                     </span>
                   );
                 })}
@@ -180,7 +211,9 @@ function ImportPreview({ result: r }: { result: ImportedResults }) {
           {w}
         </p>
       ))}
-      <p className="hint">Replaces the event details and the top 8. Your theme, background and art stay.</p>
+      <p className="hint">
+        This will replace the event details and the current top 8.
+      </p>
     </div>
   );
 }
