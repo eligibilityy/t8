@@ -1,39 +1,71 @@
 import { useState } from "react";
+import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Popover } from "@base-ui/react/popover";
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
-import type { BackgroundImage, BackgroundStyle } from "../types";
-import { THEMES } from "../data/themes";
+import type { BackgroundImage, BackgroundStyle, Theme } from "../types";
+import { THEME_COLOR_GROUPS, THEMES, contrastRatio } from "../data/themes";
 import { STAGES, stageBackground, uploadBackground } from "../lib/background";
 import { DEFAULT_BACKGROUND } from "../state";
-import { RangeField } from "./ui";
+import { ColorField, RangeField, TextField } from "./ui";
 
 type Props = {
   themeId: string;
+  customThemes: Theme[];
   onTheme: (id: string) => void;
+  onCreateTheme: () => void;
+  onUpdateTheme: (id: string, patch: Partial<Theme>) => void;
+  onDeleteTheme: (id: string) => void;
   bgImage: BackgroundImage | null;
   onBgImage: (bg: BackgroundImage | null) => void;
   bgStyle: BackgroundStyle;
   onBgStyle: (patch: Partial<BackgroundStyle>) => void;
 };
 
-export function StylePanel({ themeId, onTheme, bgImage, onBgImage, bgStyle, onBgStyle }: Props) {
+export function StylePanel({
+  themeId,
+  customThemes,
+  onTheme,
+  onCreateTheme,
+  onUpdateTheme,
+  onDeleteTheme,
+  bgImage,
+  onBgImage,
+  bgStyle,
+  onBgStyle,
+}: Props) {
+  const editing = customThemes.find((t) => t.id === themeId);
+
   return (
     <div className="style-panel">
       <div className="field-group">
         <span className="field-label">Theme</span>
         <RadioGroup className="themes" aria-label="Theme" value={themeId} onValueChange={(v) => onTheme(String(v))}>
-          {THEMES.map((t) => (
-            <Radio.Root key={t.id} value={t.id} className="theme-swatch" title={t.label}>
+          {[...THEMES, ...customThemes].map((t) => (
+            <Radio.Root key={t.id} value={t.id} className="theme-swatch" title={t.note ? `${t.label} (${t.note})` : t.label}>
               <span className="theme-colors">
                 <span style={{ background: t.bg }} />
                 <span style={{ background: t.accent }} />
                 <span style={{ background: t.accent2 }} />
               </span>
-              <span>{t.label.split(" (")[0]}</span>
+              <span className="theme-name">{t.label}</span>
             </Radio.Root>
           ))}
         </RadioGroup>
+        <div className="btn-row">
+          <button type="button" className="btn" onClick={onCreateTheme}>
+            + Make your own
+          </button>
+          <span className="hint">{editing ? "Copies this theme" : "Starts from the selected theme"}</span>
+        </div>
+        {editing && (
+          <ThemeEditor
+            key={editing.id}
+            theme={editing}
+            onChange={(patch) => onUpdateTheme(editing.id, patch)}
+            onDelete={() => onDeleteTheme(editing.id)}
+          />
+        )}
       </div>
 
       <div className="field-group">
@@ -53,6 +85,52 @@ export function StylePanel({ themeId, onTheme, bgImage, onBgImage, bgStyle, onBg
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ThemeEditor({ theme, onChange, onDelete }: { theme: Theme; onChange: (patch: Partial<Theme>) => void; onDelete: () => void }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const lowContrast = [
+    contrastRatio(theme.text, theme.surface) < 3 && "main text on panels",
+    contrastRatio(theme.accentInk, theme.accent) < 3 && "text on the accent",
+    contrastRatio(theme.textDim, theme.bg) < 2 && "small text on the background",
+  ].filter(Boolean);
+
+  return (
+    <div className="theme-editor">
+      <TextField label="Theme name" value={theme.label} onChange={(label) => onChange({ label })} placeholder="My theme" />
+      {THEME_COLOR_GROUPS.map((g) => (
+        <div key={g.title} className="color-group">
+          <span className="color-group-title">{g.title}</span>
+          {g.colors.map((c) => (
+            <ColorField key={c.key} label={c.label} value={theme[c.key]} onChange={(hex) => onChange({ [c.key]: hex })} />
+          ))}
+        </div>
+      ))}
+      {lowContrast.length > 0 && <p className="notice warn">Hard to read: {lowContrast.join(", ")}.</p>}
+      <div className="btn-row">
+        <button type="button" className="btn ghost danger" onClick={() => setConfirmDelete(true)}>
+          Delete theme…
+        </button>
+        <span className="hint">Changes save automatically in this browser.</span>
+      </div>
+
+      <AlertDialog.Root open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialog.Portal>
+          <AlertDialog.Backdrop className="backdrop" />
+          <AlertDialog.Popup className="popup dialog">
+            <AlertDialog.Title className="dialog-title">Delete “{theme.label || "this theme"}”?</AlertDialog.Title>
+            <AlertDialog.Description className="hint">The graphic switches back to a built-in theme. This can't be undone.</AlertDialog.Description>
+            <div className="btn-row end">
+              <AlertDialog.Close className="btn">Cancel</AlertDialog.Close>
+              <button type="button" className="btn danger" onClick={onDelete}>
+                Delete
+              </button>
+            </div>
+          </AlertDialog.Popup>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
     </div>
   );
 }

@@ -48,7 +48,10 @@ export type ArtLibrary = Record<string, ArtAsset>;
 
 export type Theme = {
   id: string;
+  /** Short name shown in the editor */
   label: string;
+  /** Colour summary for built-ins, e.g. "magenta / cyan" */
+  note?: string;
   bg: string;
   bg2: string;
   surface: string;
@@ -86,6 +89,8 @@ export type AppState = {
   event: EventInfo;
   entries: Entry[];
   themeId: string;
+  /** Themes the user made; ids start with "custom-" */
+  customThemes: Theme[];
   standingsFormat: string;
   background: BackgroundStyle;
 };

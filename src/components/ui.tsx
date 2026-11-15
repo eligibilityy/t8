@@ -1,9 +1,10 @@
 // Base UI wrappers, styled in App.css
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Field } from "@base-ui/react/field";
 import { Select } from "@base-ui/react/select";
 import { Slider } from "@base-ui/react/slider";
+import { normalizeHex } from "../data/themes";
 
 export function TextField({
   label,
@@ -155,6 +156,40 @@ export function RangeField({
         </Slider.Track>
       </Slider.Control>
     </Slider.Root>
+  );
+}
+
+/** Colour swatch (opens the browser's picker) plus a hex box */
+export function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (hex: string) => void }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  const commit = (text: string) => {
+    const hex = normalizeHex(text);
+    if (hex) onChange(hex);
+    else setDraft(value);
+  };
+
+  return (
+    <div className="color-field">
+      <label className="color-swatch" style={{ background: value }}>
+        <input type="color" value={value} aria-label={`${label} colour`} onChange={(e) => onChange(e.currentTarget.value)} />
+      </label>
+      <span className="color-label">{label}</span>
+      <input
+        className="input color-hex"
+        value={draft}
+        spellCheck={false}
+        aria-label={`${label} hex code`}
+        onChange={(e) => {
+          const text = e.currentTarget.value;
+          setDraft(text);
+          const hex = normalizeHex(text);
+          if (hex && text.replace("#", "").length === 6) onChange(hex);
+        }}
+        onBlur={(e) => commit(e.currentTarget.value)}
+        onKeyDown={(e) => e.key === "Enter" && commit(e.currentTarget.value)}
+      />
+    </div>
   );
 }
 

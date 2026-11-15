@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Accordion } from "@base-ui/react/accordion";
-import type { AppState, ArtAsset, ArtLibrary, BackgroundImage, BackgroundStyle, Entry, EventInfo } from "../types";
+import type { AppState, ArtAsset, ArtLibrary, BackgroundImage, BackgroundStyle, Entry, EventInfo, Theme } from "../types";
 import { getTheme } from "../data/themes";
 import { EventForm } from "./EventForm";
 import { PlayerList } from "./PlayerList";
@@ -16,12 +16,15 @@ type Props = {
   onMove: (index: number, dir: -1 | 1) => void;
   onArt: (name: string, asset: ArtAsset | null) => void;
   onTheme: (id: string) => void;
+  onCreateTheme: () => void;
+  onUpdateTheme: (id: string, patch: Partial<Theme>) => void;
+  onDeleteTheme: (id: string) => void;
   bgImage: BackgroundImage | null;
   onBgImage: (bg: BackgroundImage | null) => void;
   onBgStyle: (patch: Partial<BackgroundStyle>) => void;
 };
 
-export function Sidebar({ state, art, onEvent, onEntry, onMove, onArt, onTheme, bgImage, onBgImage, onBgStyle }: Props) {
+export function Sidebar({ state, art, onEvent, onEntry, onMove, onArt, bgImage, onBgImage, onBgStyle, ...themeActions }: Props) {
   const used = usedCharacters(state.entries);
   const ready = used.filter((n) => art[n]).length;
   const filled = state.entries.filter((e) => e.tag.trim()).length;
@@ -46,11 +49,12 @@ export function Sidebar({ state, art, onEvent, onEntry, onMove, onArt, onTheme, 
         <Section
           value="style"
           title="Style"
-          summary={[getTheme(state.themeId).label.split(" (")[0], bgImage?.label].filter(Boolean).join(" · ")}
+          summary={[getTheme(state.themeId, state.customThemes).label || "Untitled theme", bgImage?.label].filter(Boolean).join(" · ")}
         >
           <StylePanel
             themeId={state.themeId}
-            onTheme={onTheme}
+            customThemes={state.customThemes}
+            {...themeActions}
             bgImage={bgImage}
             onBgImage={onBgImage}
             bgStyle={state.background}

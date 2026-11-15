@@ -1,5 +1,6 @@
 import type { AppState, BackgroundStyle, Entry } from "./types";
 import { applyScheme } from "./lib/placements";
+import { hydrateCustomThemes } from "./data/themes";
 
 let idCounter = 0;
 export const newId = () => `p${Date.now().toString(36)}${(idCounter++).toString(36)}`;
@@ -45,6 +46,7 @@ export function defaultState(): AppState {
     },
     entries: applyScheme(sampleEntries(), "DE"),
     themeId: "heat",
+    customThemes: [],
     standingsFormat: "16x9",
     background: { ...DEFAULT_BACKGROUND },
   };
@@ -69,6 +71,7 @@ export function hydrate(saved: Partial<AppState> | null): AppState {
     event,
     entries: Array.isArray(saved.entries) && saved.entries.length ? saved.entries : d.entries,
     themeId: typeof saved.themeId === "string" ? saved.themeId : d.themeId,
+    customThemes: hydrateCustomThemes(saved.customThemes),
     standingsFormat: typeof saved.standingsFormat === "string" ? saved.standingsFormat : d.standingsFormat,
     background: hydrateBackground(saved.background),
   };

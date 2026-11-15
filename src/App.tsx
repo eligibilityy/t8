@@ -10,7 +10,7 @@ import { loadArt, loadBackground, loadState, putArt, putBackground, saveState } 
 import { isKeptOverride, resolveArt } from "./lib/artProcess";
 import { STAGES, stageBackground } from "./lib/background";
 import { downloadPng, slug } from "./lib/exportImage";
-import { FORMATS, getFormat, getTheme } from "./data/themes";
+import { FORMATS, THEMES, getFormat, getTheme, newCustomTheme } from "./data/themes";
 import { BladeStandings } from "./layouts/BladeStandings";
 import { ScaledCanvas } from "./components/ScaledCanvas";
 import { Sidebar } from "./components/Sidebar";
@@ -54,7 +54,7 @@ export default function App() {
     return () => clearTimeout(t);
   }, [state]);
 
-  const theme = getTheme(state.themeId);
+  const theme = getTheme(state.themeId, state.customThemes);
   const format = getFormat(state.standingsFormat);
   const [confirmReset, setConfirmReset] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -124,6 +124,22 @@ export default function App() {
         onMove={moveEntry}
         onArt={setArtFor}
         onTheme={(themeId) => setState((s) => ({ ...s, themeId }))}
+        onCreateTheme={() =>
+          setState((s) => {
+            const t = newCustomTheme(getTheme(s.themeId, s.customThemes), s.customThemes);
+            return { ...s, customThemes: [...s.customThemes, t], themeId: t.id };
+          })
+        }
+        onUpdateTheme={(id, patch) =>
+          setState((s) => ({ ...s, customThemes: s.customThemes.map((t) => (t.id === id ? { ...t, ...patch } : t)) }))
+        }
+        onDeleteTheme={(id) =>
+          setState((s) => ({
+            ...s,
+            customThemes: s.customThemes.filter((t) => t.id !== id),
+            themeId: s.themeId === id ? THEMES[0].id : s.themeId,
+          }))
+        }
         bgImage={bgImage}
         onBgImage={(bg) => {
           setBgImage(bg);
@@ -226,7 +242,7 @@ export default function App() {
           <AlertDialog.Popup className="popup dialog">
             <AlertDialog.Title className="dialog-title">Reset to sample data?</AlertDialog.Title>
             <AlertDialog.Description className="hint">
-              This replaces the event details, all 8 players and the style settings with the sample data. Character art and the background picture stay.
+              This replaces the event details, all 8 players and the style settings with the sample data. Character art, the background picture and your saved themes stay.
             </AlertDialog.Description>
             <div className="btn-row end">
               <AlertDialog.Close className="btn">Cancel</AlertDialog.Close>
@@ -234,7 +250,7 @@ export default function App() {
                 type="button"
                 className="btn danger"
                 onClick={() => {
-                  setState(defaultState());
+                  setState((s) => ({ ...defaultState(), customThemes: s.customThemes }));
                   setConfirmReset(false);
                 }}
               >

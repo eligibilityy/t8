@@ -3,6 +3,7 @@ import { ordinal, ordinalParts, schemePlacement } from "./placements";
 import { buildTextPost, flagEmoji } from "./textPost";
 import { matchRosterName } from "../data/tekken8";
 import { defaultState } from "../state";
+import { THEMES, contrastRatio, getTheme, hydrateCustomThemes, isCustomTheme, newCustomTheme, normalizeHex } from "../data/themes";
 
 describe("placements", () => {
   it("double elim ties", () => {
@@ -131,5 +132,43 @@ describe("synced roster", () => {
     expect(ROSTER.length).toBeGreaterThanOrEqual(40);
     expect(rosterEntry("devil jin")?.name).toBe("Devil Jin");
     expect(rosterEntry("Miary Zo")).toBeDefined();
+  });
+});
+
+describe("custom themes", () => {
+  it("normalizes hex codes", () => {
+    expect(normalizeHex("#ABC")).toBe("#aabbcc");
+    expect(normalizeHex("f50a64")).toBe("#f50a64");
+    expect(normalizeHex("#12345")).toBeNull();
+    expect(normalizeHex("red")).toBeNull();
+  });
+  it("copies the base theme under a new name", () => {
+    const t = newCustomTheme(THEMES[1], []);
+    expect(isCustomTheme(t.id)).toBe(true);
+    expect(t.label).toBe("My theme 1");
+    expect(t.accent).toBe(THEMES[1].accent);
+    expect(t.note).toBeUndefined();
+    expect(newCustomTheme(t, [t]).label).toBe("My theme 1 copy");
+  });
+  it("drops malformed saved themes and bad colours", () => {
+    const got = hydrateCustomThemes([
+      { id: "custom-a", label: "Mine", accent: "#00FF00", text: "url(x)" },
+      { id: "heat", label: "Fake built-in" },
+      { id: "custom-a", label: "Duplicate" },
+      null,
+    ]);
+    expect(got).toHaveLength(1);
+    expect(got[0].accent).toBe("#00ff00");
+    expect(got[0].text).toBe(THEMES[0].text);
+    expect(hydrateCustomThemes("nope")).toEqual([]);
+  });
+  it("finds custom themes and falls back for deleted ones", () => {
+    const t = newCustomTheme(THEMES[2], []);
+    expect(getTheme(t.id, [t])).toBe(t);
+    expect(getTheme(t.id, []).id).toBe(THEMES[0].id);
+  });
+  it("contrast ratio", () => {
+    expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 0);
+    expect(contrastRatio("#777777", "#777777")).toBe(1);
   });
 });
