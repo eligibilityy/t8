@@ -23,6 +23,16 @@ type Tab = "standings" | "text";
 const nextPaint = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 const FORMAT_ITEMS = FORMATS.map((f) => ({ value: f.id, label: f.label }));
 
+// Per-browser layout preference; storage can be unavailable
+const EDITOR_KEY = "fgc-graphics:editor-hidden";
+const readEditorHidden = () => {
+  try {
+    return localStorage.getItem(EDITOR_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
 export default function App() {
   const [state, setState] = useState<AppState>(() => hydrate(loadState<AppState>()));
   // Uploads and hand crops only
@@ -31,6 +41,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("standings");
   const [exportState, setExportState] = useState<"idle" | "busy" | "done">("idle");
   const [error, setError] = useState("");
+  const [editorHidden, setEditorHidden] = useState(readEditorHidden);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -120,8 +131,18 @@ export default function App() {
     }
   }
 
+  function toggleEditor() {
+    const next = !editorHidden;
+    setEditorHidden(next);
+    try {
+      localStorage.setItem(EDITOR_KEY, next ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (
-    <div className="app">
+    <div className="app" data-editor-hidden={editorHidden || undefined}>
       <Sidebar
         state={state}
         art={art}
@@ -156,15 +177,28 @@ export default function App() {
 
       <Tabs.Root className="stage" value={tab} onValueChange={(v) => setTab(v as Tab)}>
         <div className="toolbar">
-          <Tabs.List className="tabs" aria-label="Output">
-            <Tabs.Tab className="tab" value="standings">
-              Standings
-            </Tabs.Tab>
-            <Tabs.Tab className="tab" value="text">
-              Text post
-            </Tabs.Tab>
-            <Tabs.Indicator className="tab-indicator" />
-          </Tabs.List>
+          <div className="toolbar-left">
+            <button
+              type="button"
+              className="icon-btn editor-toggle"
+              aria-controls="editor"
+              aria-expanded={!editorHidden}
+              aria-label={editorHidden ? "Show editor" : "Hide editor"}
+              title={editorHidden ? "Show editor" : "Hide editor for a bigger preview"}
+              onClick={toggleEditor}
+            >
+              <SidebarIcon />
+            </button>
+            <Tabs.List className="tabs" aria-label="Output">
+              <Tabs.Tab className="tab" value="standings">
+                Standings
+              </Tabs.Tab>
+              <Tabs.Tab className="tab" value="text">
+                Text post
+              </Tabs.Tab>
+              <Tabs.Indicator className="tab-indicator" />
+            </Tabs.List>
+          </div>
           <div className="toolbar-right">
             {tab === "standings" && (
               <>
@@ -287,5 +321,14 @@ export default function App() {
         </AlertDialog.Portal>
       </AlertDialog.Root>
     </div>
+  );
+}
+
+function SidebarIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 3v10" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
   );
 }

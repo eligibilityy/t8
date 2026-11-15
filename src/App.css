@@ -920,10 +920,22 @@ textarea.input {
   transition-duration: 220ms;
   transition-timing-function: var(--ease-in-out);
 }
+.toolbar-left,
 .toolbar-right {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.editor-toggle {
+  width: 32px;
+  height: 32px;
+}
+/* Editor hidden: the preview gets the whole width */
+.app[data-editor-hidden] {
+  grid-template-columns: 1fr;
+}
+.app[data-editor-hidden] .sidebar {
+  display: none;
 }
 .format-select {
   width: 170px;
@@ -1160,6 +1172,13 @@ textarea.input {
   }
   .toolbar {
     gap: 8px;
+  }
+  /* One column always shows the editor */
+  .editor-toggle {
+    display: none;
+  }
+  .app[data-editor-hidden] .sidebar {
+    display: block;
   }
   /* Format + Download share a row under the tabs */
   .toolbar-right {

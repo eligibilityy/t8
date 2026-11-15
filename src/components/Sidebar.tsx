@@ -30,7 +30,7 @@ export function Sidebar({ state, art, onEvent, onEntry, onMove, onArt, bgImage, 
   const filled = state.entries.filter((e) => e.tag.trim()).length;
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" id="editor">
       <Accordion.Root className="sections" multiple defaultValue={["top8"]}>
         <Section value="event" title="Event" summary={[state.event.name, state.event.date].filter(Boolean).join(" · ")}>
           <EventForm event={state.event} onChange={onEvent} />
