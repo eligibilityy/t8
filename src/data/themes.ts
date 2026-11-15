@@ -2,7 +2,7 @@ import type { Format, Theme } from "../types";
 
 // Bebas for display, Inter for small text, JetBrains Mono for handles, URLs and meta
 const display = "'Bebas Neue', sans-serif";
-const body = "'Inter Variable', system-ui, sans-serif";
+const body = "InterVariable, system-ui, sans-serif";
 const mono = "'JetBrains Mono Variable', ui-monospace, monospace";
 
 export const THEMES: Theme[] = [

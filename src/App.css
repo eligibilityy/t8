@@ -12,7 +12,10 @@
   --ui-ok: #3fd18a;
   --ui-warn: #ffb547;
   --ui-radius: 7px;
-  --ui-font: "Inter Variable", system-ui, sans-serif;
+  --ui-font: InterVariable, system-ui, sans-serif;
+  /* Inter: contextual alternates, case-aware punctuation, round quotes, open 1, simple u, single-storey a.
+     Inherited by the graphic too; JetBrains Mono and Bebas Neue don't use these (checked). */
+  --inter-features: "calt", "case", "ss03", "cv01", "cv06", "cv11";
   /* Strong ease-out: moves right away, settles softly. For things appearing. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   /* Strong ease-in-out: for things moving from one place to another */
@@ -32,7 +35,7 @@ body {
   background: var(--ui-bg);
   color: var(--ui-text);
   font: 13px/1.45 var(--ui-font);
-  font-feature-settings: "cv11", "ss01";
+  font-feature-settings: var(--inter-features);
   -webkit-font-smoothing: antialiased;
 }
 button,
