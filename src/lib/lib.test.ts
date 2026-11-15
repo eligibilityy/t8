@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { ordinal, ordinalParts, schemePlacement } from "./placements";
 import { buildTextPost, flagEmoji } from "./textPost";
-import { matchRosterName } from "../data/tekken8";
+import { TEKKEN8_ROSTER, matchRosterName } from "../data/tekken8";
+import { builtinArt } from "./artProcess";
 import { defaultState } from "../state";
 import { FIT, clampView, project, rubberband, softPan, zoomAt, type Box } from "./panZoom";
 import { THEMES, contrastRatio, getTheme, hydrateCustomThemes, isCustomTheme, newCustomTheme, normalizeHex } from "../data/themes";
@@ -205,5 +206,12 @@ describe("preview zoom", () => {
     expect(project(1000)).toBeCloseTo(499, 0);
     expect(project(-1000)).toBeCloseTo(-499, 0);
     expect(project(0)).toBe(0);
+  });
+});
+
+describe("built-in art", () => {
+  it("every roster character has a face thumbnail", () => {
+    const missing = TEKKEN8_ROSTER.filter((n) => !builtinArt(n)?.thumb?.includes(".face."));
+    expect(missing).toEqual([]);
   });
 });

@@ -39,6 +39,8 @@ export type ArtFrame = {
 
 export type ArtAsset = ArtFrame & {
   src: string;
+  /** Small face-framed square for pickers (built-in art only) */
+  thumb?: string;
   source?: "builtin" | "upload";
   /** Cropped by hand */
   manual?: boolean;

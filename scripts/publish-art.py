@@ -21,6 +21,11 @@ MANIFEST = ROOT / "src" / "data" / "published-art.json"
 STAGE_NAMES = json.loads((ROOT / "src" / "data" / "tekken8-stage-names.json").read_text("utf8"))["stages"]
 
 CHAR_MAX_SIDE = 1600
+# Face thumbnails for the character picker: same framing as the app's art tiles
+FACE_SIDE = 160
+FACE_FILL = 0.55  # face height / tile height
+FACE_ANCHOR_Y = 0.48  # face centre, share of tile height
+DEFAULT_FRAME = {"focusX": 50, "focusY": 20, "face": 0.12}
 STAGE_COVER = (2400, 1350)  # covers both export formats
 THUMB_W = 480
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp"}
@@ -56,6 +61,16 @@ def prune(out_dir: Path, keep: set[str]) -> None:
             f.unlink()
 
 
+def face_thumb(img: Image.Image, frame: dict) -> Image.Image:
+    """Square crop centred on the face; areas past the image edge stay transparent."""
+    side = frame["face"] * img.height / FACE_FILL
+    cx = frame["focusX"] / 100 * img.width
+    cy = frame["focusY"] / 100 * img.height
+    left, top = cx - side / 2, cy - FACE_ANCHOR_Y * side
+    box = tuple(round(v) for v in (left, top, left + side, top + side))
+    return img.crop(box).resize((FACE_SIDE, FACE_SIDE), Image.Resampling.LANCZOS)
+
+
 def publish_characters() -> dict:
     CHAR_OUT.mkdir(parents=True, exist_ok=True)
     frames = json.loads((CHAR_SRC / "frames.json").read_text("utf8")) if (CHAR_SRC / "frames.json").exists() else {}
@@ -71,8 +86,12 @@ def publish_characters() -> dict:
         frame = frames.get(slug)
         if not frame:
             unframed.append(slug)
+        thumb = write_hashed(
+            CHAR_OUT, f"{slug}.face", encode(face_thumb(img, frame or DEFAULT_FRAME), "WEBP", quality=82, method=6), ".webp"
+        )
+        keep.add(thumb)
         # Frames are %, so resizing keeps them
-        entry = {"src": f"/art/tekken8/{name}"}
+        entry = {"src": f"/art/tekken8/{name}", "thumb": f"/art/tekken8/{thumb}"}
         if frame:
             entry.update({k: frame[k] for k in ("focusX", "focusY", "face")})
         out[slug] = entry

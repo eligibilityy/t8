@@ -206,6 +206,7 @@ export async function autoFrame(name: string, a: ArtAsset): Promise<ArtAsset> {
 
 type PublishedCharacter = {
   src: string;
+  thumb?: string;
   focusX?: number;
   focusY?: number;
   face?: number;
@@ -235,7 +236,7 @@ export function builtinArt(name: string): ArtAsset | null {
           zoom: 1,
         }
       : DEFAULT_FRAME;
-  return { src: p.src, ...frame, source: "builtin" };
+  return { src: p.src, thumb: p.thumb, ...frame, source: "builtin" };
 }
 
 const frameOf = (a: ArtAsset): ArtFrame => ({
