@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Accordion } from "@base-ui/react/accordion";
 import type {
   AppState,
@@ -15,6 +15,8 @@ import { EventForm } from "./EventForm";
 import { PlayerList } from "./PlayerList";
 import { ArtLibraryPanel, usedCharacters } from "./ArtLibraryPanel";
 import { StylePanel } from "./StylePanel";
+import { ImportDialog } from "./ImportDialog";
+import type { ImportedResults } from "../lib/importResults";
 import { ChevronIcon } from "./ui";
 
 type Props = {
@@ -32,6 +34,7 @@ type Props = {
   bgImage: BackgroundImage | null;
   onBgImage: (bg: BackgroundImage | null) => void;
   onBgStyle: (patch: Partial<BackgroundStyle>) => void;
+  onImport: (results: ImportedResults) => void;
 };
 
 export function Sidebar({
@@ -44,14 +47,32 @@ export function Sidebar({
   bgImage,
   onBgImage,
   onBgStyle,
+  onImport,
   ...themeActions
 }: Props) {
+  const [importOpen, setImportOpen] = useState(false);
   const used = usedCharacters(state.entries);
   const ready = used.filter((n) => art[n]).length;
   const filled = state.entries.filter((e) => e.tag.trim()).length;
 
   return (
     <aside className="sidebar" id="editor">
+      <div className="sidebar-import">
+        <button
+          type="button"
+          className="btn import-btn"
+          onClick={() => setImportOpen(true)}
+        >
+          <ImportIcon />
+          Import results
+        </button>
+        <span className="hint">from start.gg or Challonge</span>
+      </div>
+      <ImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImport={onImport}
+      />
       <Accordion.Root className="sections" multiple defaultValue={["top8"]}>
         <Section
           value="event"
@@ -141,5 +162,20 @@ function Section({
         <div className="section-body">{children}</div>
       </Accordion.Panel>
     </Accordion.Item>
+  );
+}
+
+function ImportIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+      <path
+        d="M7 1.75v7m0 0L4.25 6M7 8.75 9.75 6M2 9.5v1.25c0 .69.56 1.25 1.25 1.25h7.5c.69 0 1.25-.56 1.25-1.25V9.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

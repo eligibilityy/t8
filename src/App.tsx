@@ -13,6 +13,7 @@ import type {
 } from "./types";
 import { defaultState, hydrate } from "./state";
 import { applyScheme } from "./lib/placements";
+import { applyImport } from "./lib/importResults";
 import {
   loadArt,
   loadBackground,
@@ -203,6 +204,7 @@ export default function App() {
       <Sidebar
         state={state}
         art={art}
+        onImport={(results) => setState((s) => applyImport(s, results))}
         onEvent={setEvent}
         onEntry={setEntry}
         onMove={moveEntry}

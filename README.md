@@ -15,7 +15,8 @@ Features
 - Built-in art for the full roster, with crop controls and custom uploads
 - Four themes, plus stage or custom backgrounds with shade, blur and position
 - Double elim, single elim or custom placements
-- No account or server: everything is saved in your browser
+- Import the top 8 from a start.gg or Challonge link
+- No account: everything is saved in your browser (imports look the link up through the site's server)
 
 Stack
 --------
@@ -50,6 +51,17 @@ npm run cutout       # raw renders -> cutouts (needs .venv with rembg, pillow, o
 npm run publish:art  # cutouts and stages -> public/
 npm run sync:roster  # update roster names from Wavu Wiki
 ```
+
+### Imports
+
+`api/import.ts` is a Vercel function that looks up a bracket link with the site's own keys, so visitors only paste a link. Set these in Vercel (Project → Settings → Environment Variables) and, for `npm run dev` / `npm run preview`, in `.env.local` (see `.env.example`):
+
+| Variable | Where to get it |
+|---|---|
+| `STARTGG_TOKEN` | start.gg → Developer Settings → Personal Access Tokens |
+| `CHALLONGE_API_KEY` | challonge.com → Developer Settings (API key) |
+
+start.gg allows about 80 requests a minute per token; an import uses 2 or 3. Challonge's free API tier allows 500 requests a month. Repeat lookups of the same link within a minute are answered from Vercel's cache.
 
 To do
 --------
