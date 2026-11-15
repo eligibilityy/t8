@@ -1,5 +1,8 @@
 import { forwardRef, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
+/** One-column layout; keep in sync with the media query in App.css */
+const STACKED_QUERY = "(max-width: 900px), (max-height: 480px)";
+
 /** Fixed-size canvas scaled to fit; the ref is the unscaled node. */
 export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: number; children: ReactNode }>(
   function ScaledCanvas({ width, height, children }, ref) {
@@ -10,7 +13,9 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       const el = outer.current;
       if (!el) return;
       const update = () => {
-        const maxH = window.innerHeight - 190;
+        // Side by side the preview must fit under the toolbar; stacked, the page scrolls, so allow most of the screen
+        const stacked = window.matchMedia(STACKED_QUERY).matches;
+        const maxH = stacked ? window.innerHeight * 0.9 : window.innerHeight - 190;
         setScale(Math.min(el.clientWidth / width, maxH / height, 1));
       };
       update();
