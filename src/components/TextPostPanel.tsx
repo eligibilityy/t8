@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Checkbox } from "@base-ui/react/checkbox";
 import type { Entry, EventInfo } from "../types";
 import { buildTextPost } from "../lib/textPost";
-import { SwapLabel } from "./ui";
+import { CheckIcon, SwapLabel } from "./ui";
 
 export function TextPostPanel({
   event,
@@ -44,7 +44,7 @@ export function TextPostPanel({
               onCheckedChange={(v) => setOpts({ ...opts, [k]: v })}
             >
               <Checkbox.Indicator className="checkbox-indicator">
-                ✓
+                <CheckIcon size={11} />
               </Checkbox.Indicator>
             </Checkbox.Root>
             <span>{k[0].toUpperCase() + k.slice(1)}</span>
@@ -64,7 +64,15 @@ export function TextPostPanel({
       </p>
       <div className="btn-row">
         <button type="button" className="btn primary" onClick={copy}>
-          <SwapLabel state={copyState} labels={{ idle: "Copy post text", done: "Copied ✓", blocked: "Couldn't copy" }} />
+          <SwapLabel state={copyState} labels={{
+              idle: "Copy post text",
+              done: (
+                <>
+                  Copied <CheckIcon />
+                </>
+              ),
+              blocked: "Couldn't copy",
+            }} />
         </button>
       </div>
     </div>

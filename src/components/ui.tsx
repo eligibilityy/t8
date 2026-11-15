@@ -57,7 +57,9 @@ export function SelectField<T extends string>({
                 {items.map((i) => (
                   <Select.Item key={i.value} value={i.value} className="list-item">
                     <Select.ItemText>{i.label}</Select.ItemText>
-                    <Select.ItemIndicator className="list-check">✓</Select.ItemIndicator>
+                    <Select.ItemIndicator className="list-check">
+                      <CheckIcon />
+                    </Select.ItemIndicator>
                   </Select.Item>
                 ))}
               </Select.List>
@@ -210,6 +212,25 @@ export function SwapLabel<K extends string>({ state, labels }: { state: K; label
 }
 
 export const Spinner = () => <span className="spinner" aria-hidden="true" />;
+
+// Icons are SVG rather than text glyphs (✓, ⋯) so they never pull in a font file
+export function CheckIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M2.5 6.5l2.5 2.5 4.5-5.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function MoreIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="3.5" cy="8" r="1.25" fill="currentColor" />
+      <circle cx="8" cy="8" r="1.25" fill="currentColor" />
+      <circle cx="12.5" cy="8" r="1.25" fill="currentColor" />
+    </svg>
+  );
+}
 
 export function ChevronIcon() {
   return (

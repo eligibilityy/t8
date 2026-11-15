@@ -15,7 +15,7 @@ import { BladeStandings } from "./layouts/BladeStandings";
 import { ScaledCanvas } from "./components/ScaledCanvas";
 import { Sidebar } from "./components/Sidebar";
 import { TextPostPanel } from "./components/TextPostPanel";
-import { SelectField, Spinner, SwapLabel } from "./components/ui";
+import { CheckIcon, MoreIcon, SelectField, Spinner, SwapLabel } from "./components/ui";
 
 type Tab = "standings" | "text";
 
@@ -224,7 +224,11 @@ export default function App() {
                           <Spinner /> Rendering
                         </>
                       ),
-                      done: "Downloaded ✓",
+                      done: (
+                        <>
+                          Downloaded <CheckIcon />
+                        </>
+                      ),
                     }}
                   />
                 </button>
@@ -232,7 +236,7 @@ export default function App() {
             )}
             <Menu.Root>
               <Menu.Trigger className="icon-btn more" aria-label="More options">
-                ⋯
+                <MoreIcon />
               </Menu.Trigger>
               <Menu.Portal>
                 <Menu.Positioner className="positioner" sideOffset={6} align="end">

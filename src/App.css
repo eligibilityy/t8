@@ -282,6 +282,7 @@ textarea.input {
   color: #ff6b8f;
 }
 .list-check {
+  display: flex;
   margin-left: auto;
   color: var(--ui-accent);
 }
@@ -1083,9 +1084,8 @@ textarea.input {
   border-color: var(--ui-accent);
 }
 .checkbox-indicator {
+  display: flex;
   color: #fff;
-  font-size: 11px;
-  line-height: 1;
 }
 .checkbox-indicator[data-unchecked] {
   display: none;
