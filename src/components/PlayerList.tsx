@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, type RefObject } from "react";
 import { NumberField } from "@base-ui/react/number-field";
 import countryData from "flag-icons/country.json";
 import type { ArtLibrary, Entry, PlacementScheme } from "../types";
@@ -24,11 +25,42 @@ const matchCountry = (c: Country, q: string) => {
 const FlagChip = ({ code }: { code: string }) =>
   /^[a-z]{2}$/.test(code) ? <span className={`fi fi-${code} flag-chip`} aria-hidden="true" /> : <span className="flag-chip empty" />;
 
+/**
+ * Slides rows to their new place after a reorder (FLIP). Each slide starts from where
+ * the row is on screen right now, so quick repeated moves redirect instead of jumping.
+ */
+function useReorderAnimation(list: RefObject<HTMLOListElement>) {
+  const lastTops = useRef(new Map<string, number>());
+  useLayoutEffect(() => {
+    const el = list.current;
+    if (!el) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const tops = new Map<string, number>();
+    for (const row of Array.from(el.children) as HTMLElement[]) {
+      const id = row.dataset.id ?? "";
+      const top = row.offsetTop;
+      tops.set(id, top);
+      const prev = lastTops.current.get(id);
+      if (prev === undefined || prev === top || reduce) continue;
+      const offset = new DOMMatrixReadOnly(getComputedStyle(row).transform).m42;
+      row.getAnimations().forEach((a) => a.cancel());
+      row.animate([{ transform: `translateY(${prev + offset - top}px)` }, { transform: "none" }], {
+        duration: 240,
+        easing: "cubic-bezier(0.77, 0, 0.175, 1)",
+      });
+    }
+    lastTops.current = tops;
+  });
+}
+
 export function PlayerList({ entries, scheme, art, onChange, onMove }: Props) {
+  const listRef = useRef<HTMLOListElement>(null);
+  useReorderAnimation(listRef);
+
   return (
-    <ol className="players">
+    <ol className="players" ref={listRef}>
       {entries.map((e, i) => (
-        <li key={e.id} className="player">
+        <li key={e.id} className="player" data-id={e.id}>
           <div className="player-row">
             {scheme === "custom" ? (
               <NumberField.Root
