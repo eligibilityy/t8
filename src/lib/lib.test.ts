@@ -45,7 +45,7 @@ describe("text post", () => {
     expect(flagEmoji("x")).toBe("");
   });
   it("formats medals, keycaps, ties and meta", () => {
-    // Own fixture, so changing the app's sample data can't break this test
+    // Its own fixture, so changing the app's sample data can't break this test
     const players: Array<[string, string, string, string[]]> = [
       ["NVX", "Kagerou", "jp", ["Jin", "Devil Jin"]],
       ["", "Ironclad", "kr", ["Dragunov"]],
@@ -110,14 +110,14 @@ describe("estimateFrame", () => {
 
   it("finds a skin-tone face under hair, ignoring wide wings at the top", () => {
     const d = canvas();
-    fill(d, 0, 40, 2, 10, DARK); // "wings" spanning the full width, above the head
+    fill(d, 0, 40, 2, 10, DARK); // wings across the full width, above the head
     fill(d, 17, 25, 6, 9, DARK); // hair
-    fill(d, 17, 25, 9, 17, SKIN); // face, rows 9–16
-    fill(d, 19, 23, 17, 20, SKIN); // neck (narrow)
+    fill(d, 17, 25, 9, 17, SKIN); // face
+    fill(d, 19, 23, 17, 20, SKIN); // a narrow neck
     fill(d, 10, 30, 20, 80, DARK); // body
     const f = estimateFrame(d, W, H);
-    expect(f.focusX).toBeCloseTo(51.25, 0); // face spans x 17–24 → centre 20.5
-    expect(f.focusY).toBeGreaterThan(10); // below the hair line
+    expect(f.focusX).toBeCloseTo(51.25, 0); // the face runs from x 17 to 24, so its centre is 20.5
+    expect(f.focusY).toBeGreaterThan(10); // below the hairline
     expect(f.focusY).toBeLessThan(22);
     expect(f.face).toBeLessThan(0.2); // the neck isn't counted as face
   });
@@ -212,12 +212,11 @@ describe("custom themes", () => {
 });
 
 describe("preview zoom", () => {
-  // 1920×1080 graphic shown at 0.5 in a 960×540 frame, up to 4× fit (200% real size)
+  // A 1920x1080 graphic shown at half size in a 960x540 frame, zooming up to 4x
   const b: Box = { width: 1920, height: 1080, frameW: 960, frameH: 540, fit: 0.5, maxZ: 4 };
 
   it("zooms around the given point", () => {
     const v = zoomAt(b, FIT, 2, 300, 200);
-    // the graphic spot under (300, 200) stays under it
     const before = { x: (300 - FIT.x) / (0.5 * FIT.z), y: (200 - FIT.y) / (0.5 * FIT.z) };
     const after = { x: (300 - v.x) / (0.5 * v.z), y: (200 - v.y) / (0.5 * v.z) };
     expect(after.x).toBeCloseTo(before.x);
@@ -230,7 +229,7 @@ describe("preview zoom", () => {
   it("keeps the graphic covering the frame", () => {
     const v = clampView(b, { z: 2, x: 500, y: -5000 });
     expect(v.x).toBe(0);
-    expect(v.y).toBe(540 - 1080); // bottom edge meets the frame
+    expect(v.y).toBe(540 - 1080); // the bottom edge lines up with the frame
   });
   it("resists past the edges", () => {
     expect(softPan(50, -500, 0, 960)).toBeGreaterThan(0);
@@ -262,7 +261,7 @@ describe("colour maths", () => {
     expect(bestOn("#0b0b0f", ["#ffffff", "#111111"])).toBe("#ffffff");
   });
   it("finds a background's main colours", () => {
-    // 3/4 red, 1/4 blue, plus black that should be ignored
+    // Mostly red, some blue, and black that should be ignored
     const px = (r: number, g: number, b: number, n: number) => Array.from({ length: n }, () => [r, g, b, 255]).flat();
     const data = new Uint8ClampedArray([...px(220, 30, 40, 300), ...px(30, 60, 220, 100), ...px(0, 0, 0, 200)]);
     const pal = paletteFromPixels(data, 4);
@@ -312,7 +311,6 @@ describe("theme list", () => {
     expect(s.customThemes[0].accent).toBe("#00ff00");
     expect(s.themeId).toBe(s.customThemes[0].id);
     expect(THEMES[0].accent).not.toBe("#00ff00");
-    // A second edit updates the copy instead of making another
     const s2 = updateTheme(s, s.themeId, { accent: "#0000ff" });
     expect(s2.customThemes).toHaveLength(1);
     expect(s2.customThemes[0].accent).toBe("#0000ff");

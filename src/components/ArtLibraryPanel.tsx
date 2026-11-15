@@ -9,7 +9,7 @@ import { RangeField } from "./ui";
 type Props = {
   art: ArtLibrary;
   entries: Entry[];
-  /** null = back to built-in art */
+  // Passing null goes back to the built-in art.
   onSet: (name: string, asset: ArtAsset | null) => void;
 };
 

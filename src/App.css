@@ -1,4 +1,3 @@
-/* Editor UI. Styles Base UI parts via their data-* state attributes. */
 :root {
   --ui-bg: #0e0f13;
   --ui-panel: #16171c;
@@ -56,7 +55,6 @@ code {
   height: 100%;
 }
 
-/* ───────── Sidebar sections (Accordion) ───────── */
 .sidebar {
   overflow-y: auto;
   border-right: 1px solid var(--ui-edge);
@@ -126,7 +124,6 @@ code {
   padding: 2px 18px 18px;
 }
 
-/* ───────── Fields ───────── */
 .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -195,7 +192,7 @@ textarea.input {
   color: var(--ui-dim);
 }
 
-/* Autocomplete: wrapper is the visible box */
+/* The wrapper is the visible box here, not the input */
 .suggest {
   display: flex;
   align-items: center;
@@ -221,7 +218,6 @@ textarea.input {
 .flag-chip.empty {
   border: 1px dashed var(--ui-edge-strong);
 }
-/* ───────── Popups (Select, Autocomplete, Menu, Popover) ───────── */
 .positioner {
   z-index: 50;
   outline: none;
@@ -241,7 +237,7 @@ textarea.input {
   opacity: 0;
   transform: scale(0.97);
 }
-/* Leaving is quicker than arriving */
+/* Closing is quicker than opening */
 .popup[data-ending-style] {
   transition-duration: 100ms;
 }
@@ -286,7 +282,6 @@ textarea.input {
   flex: 1;
 }
 
-/* ───────── Buttons ───────── */
 .btn,
 .icon-btn {
   display: inline-flex;
@@ -323,7 +318,6 @@ textarea.input {
   cursor: default;
 }
 
-/* Press feedback: shrink slightly the moment it's pressed */
 .btn,
 .icon-btn,
 .theme-swatch,
@@ -342,12 +336,11 @@ textarea.input {
 .bg-option:active:not(:disabled) {
   transform: scale(0.97);
 }
-/* Wide card: a smaller squeeze reads the same */
+/* A smaller squeeze looks the same on a wide card */
 .bg-current:active {
   transform: scale(0.985);
 }
 
-/* Button labels that swap in place (see SwapLabel) */
 .swap {
   display: inline-grid;
 }
@@ -385,7 +378,7 @@ textarea.input {
 .btn[data-busy] {
   cursor: progress;
 }
-/* The preview dims while it's being rendered */
+/* Dim the preview while it's being rendered */
 .stage-panel {
   transition: opacity 200ms var(--ease-out);
 }
@@ -446,7 +439,6 @@ textarea.input {
   color: var(--ui-warn);
 }
 
-/* ───────── Top 8 ───────── */
 .players {
   position: relative;
   list-style: none;
@@ -521,7 +513,6 @@ textarea.input {
   flex: 1;
 }
 
-/* ───────── Characters (portrait tiles + picker) ───────── */
 .char-slots {
   display: flex;
   gap: 8px;
@@ -532,7 +523,7 @@ textarea.input {
 .char-slot {
   position: relative;
   width: 64px;
-  /* Horizontal drags reorder; vertical swipes still scroll */
+  /* Sideways drags reorder, and vertical swipes still scroll */
   touch-action: pan-y;
 }
 .char-slots[data-dragging] {
@@ -580,7 +571,7 @@ textarea.input {
   width: 100%;
   height: 100%;
 }
-/* Portraits aren't draggable images: a press on one starts our reorder drag */
+/* Stop the browser dragging the image itself, so a press starts our reorder drag */
 .char-tile img {
   pointer-events: none;
   -webkit-user-drag: none;
@@ -657,7 +648,7 @@ textarea.input {
 }
 .char-grid {
   display: grid;
-  /* Keep in sync with COLS in CharacterSlots.tsx */
+  /* Has to match COLS in CharacterSlots.tsx */
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
   max-height: min(312px, calc(var(--available-height, 400px) - 120px));
@@ -703,7 +694,6 @@ textarea.input {
   word-break: break-word;
 }
 
-/* ───────── Art ───────── */
 .art-panel {
   display: flex;
   flex-direction: column;
@@ -780,7 +770,6 @@ textarea.input {
   gap: 10px;
 }
 
-/* Slider */
 .range {
   display: flex;
   flex-direction: column;
@@ -824,7 +813,6 @@ textarea.input {
   outline-offset: 2px;
 }
 
-/* ───────── Style ───────── */
 .style-panel,
 .field-group {
   display: flex;
@@ -878,7 +866,6 @@ textarea.input {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* "Plain" swatch */
 .bg-none-swatch {
   display: block;
   background:
@@ -984,7 +971,6 @@ textarea.input {
   white-space: nowrap;
 }
 
-/* Mini standings graphic */
 .theme-preview {
   position: relative;
   display: flex;
@@ -1037,7 +1023,6 @@ textarea.input {
   }
 }
 
-/* Theme editor */
 .theme-editor {
   display: flex;
   flex-direction: column;
@@ -1080,7 +1065,6 @@ textarea.input {
   text-transform: uppercase;
 }
 
-/* A colour setting: one wide button, plus optional controls on the right */
 .color-row {
   display: flex;
   align-items: center;
@@ -1178,7 +1162,6 @@ button.auto-chip {
   font-variant-numeric: tabular-nums;
 }
 
-/* Matched colours disclosure */
 .matched-trigger {
   display: flex;
   align-items: center;
@@ -1236,7 +1219,6 @@ button.auto-chip {
   margin: 6px 0 4px;
 }
 
-/* Undo after deleting a theme */
 .notice.undo {
   display: flex;
   align-items: center;
@@ -1256,7 +1238,6 @@ button.auto-chip {
   cursor: pointer;
 }
 
-/* Colour picker popover */
 .color-popup {
   width: 252px;
   padding: 12px;
@@ -1437,7 +1418,6 @@ button.auto-chip {
     0 0 0 3.5px var(--ui-text);
 }
 
-/* ───────── Stage ───────── */
 .stage {
   min-width: 0;
   overflow: auto;
@@ -1497,7 +1477,7 @@ button.auto-chip {
   width: 32px;
   height: 32px;
 }
-/* Editor hidden: the preview gets the whole width */
+/* With the editor hidden, the preview gets the whole width */
 .app[data-editor-hidden] {
   grid-template-columns: 1fr;
 }
@@ -1524,7 +1504,7 @@ button.auto-chip {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   border: 1px solid var(--ui-edge);
   user-select: none;
-  /* Vertical swipes still scroll the page; pinches come to us */
+  /* Vertical swipes still scroll the page, and pinches come to us */
   touch-action: pan-y;
 }
 .scaled-frame[data-zoomed] {
@@ -1541,7 +1521,6 @@ button.auto-chip {
   transform-origin: 0 0;
 }
 
-/* Zoom row under the preview */
 .zoom-controls {
   display: flex;
   align-items: center;
@@ -1608,7 +1587,6 @@ button.auto-chip {
   }
 }
 
-/* ───────── Text post ───────── */
 .textpost {
   display: flex;
   flex-direction: column;
@@ -1657,7 +1635,6 @@ button.auto-chip {
   display: none;
 }
 
-/* ───────── Dialog ───────── */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -1695,7 +1672,6 @@ button.auto-chip {
   font-weight: 600;
 }
 
-/* About dialog */
 .about {
   display: flex;
   flex-direction: column;
@@ -1707,8 +1683,7 @@ button.auto-chip {
   margin: 0;
 }
 
-/* ───────── Small screens: one column, preview on top ───────── */
-/* Keep in sync with STACKED_QUERY in ScaledCanvas.tsx */
+/* One column, preview on top. Has to match STACKED_QUERY in ScaledCanvas.tsx */
 @media (max-width: 900px), (max-height: 480px) {
   html,
   body,
@@ -1739,14 +1714,14 @@ button.auto-chip {
   .toolbar {
     gap: 8px;
   }
-  /* One column always shows the editor */
+  /* In one column the editor is always shown */
   .editor-toggle {
     display: none;
   }
   .app[data-editor-hidden] .sidebar {
     display: block;
   }
-  /* Format + Download share a row under the tabs */
+  /* The format picker and Download share a row under the tabs */
   .toolbar-right {
     flex: 1;
     justify-content: flex-end;
@@ -1758,9 +1733,8 @@ button.auto-chip {
   }
 }
 
-/* ───────── Touch: bigger targets, no iOS focus zoom ───────── */
 @media (pointer: coarse) {
-  /* iOS zooms into inputs under 16px */
+  /* iOS zooms in on any input smaller than 16px */
   .input,
   .suggest-input,
   .select-trigger,
@@ -1822,7 +1796,6 @@ button.auto-chip {
   }
 }
 
-/* ───────── Reduced motion: keep fades and feedback, drop movement ───────── */
 @media (prefers-reduced-motion: reduce) {
   .popup[data-starting-style],
   .popup[data-ending-style],
@@ -1846,7 +1819,6 @@ button.auto-chip {
   }
 }
 
-/* ───────── Import results ───────── */
 .sidebar-import {
   display: flex;
   align-items: center;

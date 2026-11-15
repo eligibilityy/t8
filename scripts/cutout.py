@@ -28,7 +28,7 @@ ALIASES: dict[str, str] = {"fengwei": "feng", "feng-wei": "feng", "jack8": "jack
 
 
 def has_cutout(img: Image.Image) -> bool:
-    """True if the image already has real transparency."""
+    # Already has real transparency?
     if "A" not in img.getbands() and "transparency" not in img.info:
         return False
     a = np.asarray(img.convert("RGBA").getchannel("A"))
@@ -36,7 +36,7 @@ def has_cutout(img: Image.Image) -> bool:
 
 
 def border_colour(rgb: np.ndarray) -> tuple[np.ndarray, float]:
-    """Border colour and how uniform it is."""
+    # The border colour, and how even it is
     h, w, _ = rgb.shape
     s = max(2, round(min(h, w) * 0.01))
     strip = np.concatenate(
@@ -47,7 +47,7 @@ def border_colour(rgb: np.ndarray) -> tuple[np.ndarray, float]:
 
 
 def decontaminate(rgb: np.ndarray, alpha: np.ndarray, bg: np.ndarray) -> np.ndarray:
-    """Remove background colour bleeding into soft edges: F = (C - B(1-a)) / a."""
+    # Take out background colour that bleeds into soft edges: F = (C - B(1 - a)) / a
     a = alpha.astype(np.float32)[..., None] / 255.0
     c = rgb.astype(np.float32)
     edge = (a > 0) & (a < 0.98)
@@ -88,11 +88,11 @@ def process(src: Path, dst: Path, session) -> str:
     else:
         rgb_img = fit(img.convert("RGB"))
         mask = remove(rgb_img, session=session, only_mask=True, post_process_mask=False)
-        assert isinstance(mask, Image.Image)  # PIL in, PIL out
+        assert isinstance(mask, Image.Image)
         alpha = np.asarray(mask.convert("L"))
         rgb = np.asarray(rgb_img)
         bg, spread = border_colour(rgb)
-        if spread < 12:  # flat background
+        if spread < 12:  # a flat background
             rgb = decontaminate(rgb, alpha, bg)
             note = f"bg rgb({bg[0]:.0f},{bg[1]:.0f},{bg[2]:.0f}) removed from edges"
         else:
@@ -108,13 +108,13 @@ YUNET = ROOT / ".venv" / "models" / "yunet.onnx"
 YUNET_URL = (
     "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
 )
-# face = 0.98 × box height, centre 22% down the box
+# The face is 0.98 of the box height, centred 22% of the way down
 FACE_PER_BOX = 0.98
 FOCUS_DOWN_BOX = 0.22
 
 
 def detect_frame(path: Path) -> dict | None:
-    """Face frame from OpenCV YuNet, or None."""
+    # Finds the face with OpenCV YuNet, or gives up and returns None
     import cv2
 
     img = Image.open(path).convert("RGBA")
@@ -137,7 +137,7 @@ def detect_frame(path: Path) -> dict | None:
 
 
 def add_missing_frames() -> None:
-    """Add detected frames for cutouts missing from frames.json."""
+    # Detects frames for any cutouts that aren't in frames.json yet
     frames = json.loads(FRAMES.read_text(encoding="utf-8")) if FRAMES.exists() else {}
     missing = [p for p in sorted(OUT.glob("*.png")) if p.stem not in frames]
     if not missing:

@@ -48,14 +48,12 @@ import {
 
 type Tab = "standings" | "text";
 
-/** Resolves after the browser has painted the current state */
 const nextPaint = () =>
   new Promise<void>((r) =>
     requestAnimationFrame(() => requestAnimationFrame(() => r())),
   );
 const FORMAT_ITEMS = FORMATS.map((f) => ({ value: f.id, label: f.label }));
 
-// Per-browser layout preference; storage can be unavailable
 const EDITOR_KEY = "fgc-graphics:editor-hidden";
 const readEditorHidden = () => {
   try {
@@ -69,7 +67,7 @@ export default function App() {
   const [state, setState] = useState<AppState>(() =>
     hydrate(loadState<AppState>()),
   );
-  // Uploads and hand crops only
+  // Only uploads and hand-adjusted crops get saved.
   const [savedArt, setSavedArt] = useState<ArtLibrary>({});
   const [bgImage, setBgImage] = useState<BackgroundImage | null>(null);
   const [tab, setTab] = useState<Tab>("standings");
@@ -82,7 +80,7 @@ export default function App() {
 
   useEffect(() => {
     void loadBackground().then((bg) => {
-      // Re-resolve built-in stages; file names change on publish
+      // Stage file names change every time the art is published, so look them up again.
       if (bg?.id.startsWith("stage:") && !bg.src.startsWith("data:")) {
         const stage = STAGES.find((s) => `stage:${s.slug}` === bg.id);
         return setBgImage(stage ? stageBackground(stage) : null);
@@ -137,7 +135,6 @@ export default function App() {
       return { ...s, entries: applyScheme(entries, s.event.scheme) };
     });
 
-  /** null = back to built-in art */
   const setArtFor = (name: string, asset: ArtAsset | null) => {
     setSavedArt((a) => {
       const next = { ...a };
@@ -174,7 +171,7 @@ export default function App() {
     setExportState("busy");
     setError("");
     try {
-      // Rendering blocks the main thread; let the busy state paint first
+      // Rendering hogs the main thread, so let the spinner show up first.
       await nextPaint();
       const node = canvasRef.current.firstElementChild as HTMLElement;
       await downloadPng(node, format.width, format.height, filename);
@@ -194,9 +191,7 @@ export default function App() {
     setEditorHidden(next);
     try {
       localStorage.setItem(EDITOR_KEY, next ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
+    } catch {}
   }
 
   return (

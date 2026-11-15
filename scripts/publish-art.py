@@ -21,12 +21,12 @@ MANIFEST = ROOT / "src" / "data" / "published-art.json"
 STAGE_NAMES = json.loads((ROOT / "src" / "data" / "tekken8-stage-names.json").read_text("utf8"))["stages"]
 
 CHAR_MAX_SIDE = 1600
-# Face thumbnails for the character picker: same framing as the app's art tiles
+# Face thumbnails for the character picker, framed like the app's art tiles
 FACE_SIDE = 160
-FACE_FILL = 0.55  # face height / tile height
-FACE_ANCHOR_Y = 0.48  # face centre, share of tile height
+FACE_FILL = 0.55  # how much of the tile height the face takes up
+FACE_ANCHOR_Y = 0.48  # where the face centre sits, as a share of the tile height
 DEFAULT_FRAME = {"focusX": 50, "focusY": 20, "face": 0.12}
-STAGE_COVER = (2400, 1350)  # covers both export formats
+STAGE_COVER = (2400, 1350)  # big enough for both export formats
 THUMB_W = 480
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp"}
 
@@ -62,7 +62,6 @@ def prune(out_dir: Path, keep: set[str]) -> None:
 
 
 def face_thumb(img: Image.Image, frame: dict) -> Image.Image:
-    """Square crop centred on the face; areas past the image edge stay transparent."""
     side = frame["face"] * img.height / FACE_FILL
     cx = frame["focusX"] / 100 * img.width
     cy = frame["focusY"] / 100 * img.height
@@ -90,7 +89,7 @@ def publish_characters() -> dict:
             CHAR_OUT, f"{slug}.face", encode(face_thumb(img, frame or DEFAULT_FRAME), "WEBP", quality=82, method=6), ".webp"
         )
         keep.add(thumb)
-        # Frames are %, so resizing keeps them
+        # Frames are percentages, so resizing doesn't change them
         entry = {"src": f"/art/tekken8/{name}", "thumb": f"/art/tekken8/{thumb}"}
         if frame:
             entry.update({k: frame[k] for k in ("focusX", "focusY", "face")})

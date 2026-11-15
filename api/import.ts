@@ -1,11 +1,7 @@
-// GET /api/import?url=<start.gg or Challonge link>
-//
-// Looks up a bracket's final top 8 with the site's own credentials (Vercel env vars STARTGG_TOKEN,
-// CHALLONGE_API_KEY, and CHALLONGE_CLIENT_ID + CHALLONGE_CLIENT_SECRET), so visitors only paste a link. Self-contained on purpose: Vercel runs
-// this file as an ES module without bundling, so it imports nothing local. Names, countries and
-// characters come back as the bracket site has them; the app maps them to its roster and flags.
+// Looks up a bracket's top 8 with the site's own keys, so people only have to paste a link.
+// Vercel runs this file as it is, without bundling, so it can't import anything else from the project.
 
-// Read through globalThis so this compiles with or without Node's type definitions
+// Going through globalThis keeps this compiling whether or not Node's types are installed.
 const env = (): Record<string, string | undefined> =>
   (globalThis as { process?: { env: Record<string, string | undefined> } })
     .process?.env ?? {};
@@ -14,10 +10,8 @@ export type ImportedPlayer = {
   placement: number;
   prefix: string;
   tag: string;
-  /** Country name or ISO code, as the site gives it */
   country: string;
   handle: string;
-  /** Most played first */
   characters: string[];
 };
 
@@ -40,7 +34,6 @@ export type BracketRef =
   | { source: "startgg"; tournament: string; event?: string }
   | { source: "challonge"; id: string; community?: string };
 
-/** Something the visitor can act on; shown as is */
 export class ImportError extends Error {
   status: number;
   constructor(message: string, status = 400) {
@@ -49,7 +42,6 @@ export class ImportError extends Error {
   }
 }
 
-// ───────────────────────── Links ─────────────────────────
 
 export function parseBracketUrl(input: string): BracketRef | null {
   let url: URL;
@@ -77,7 +69,7 @@ export function parseBracketUrl(input: string): BracketRef | null {
   }
 
   if (host === "challonge.com" || host.endsWith(".challonge.com")) {
-    // challonge.com/<id>, challonge.com/<lang>/<id>, <community>.challonge.com/<id>
+    // Covers challonge.com/abc, challonge.com/en/abc and community links like dlsl.challonge.com/abc.
     const rest =
       /^[a-z]{2}(-[a-z]{2})?$/i.test(parts[0] ?? "") && parts.length > 1
         ? parts.slice(1)
@@ -94,9 +86,7 @@ export function parseBracketUrl(input: string): BracketRef | null {
   return null;
 }
 
-// ───────────────────────── Shared helpers ─────────────────────────
 
-/** Unix seconds → "Jun 28, 2026" in the event's own timezone */
 export function formatDate(
   seconds: number | null | undefined,
   timeZone?: string | null,
@@ -124,13 +114,12 @@ const tidyGame = (name: string) =>
   /tekken\s*8/i.test(name) ? "Tekken 8" : name;
 const isTekken8 = (name: string) => /tekken\s*8/i.test(name);
 
-/** "TWIS | Arslan Ash" → ["TWIS", "Arslan Ash"]; also the full-width ｜ and the Korean ㅣ people type for it */
+// Some people type a full-width ｜ or the Korean ㅣ instead of a pipe.
 export function splitPrefix(name: string): [string, string] {
   const m = name.match(/^(.{1,16}?)\s*[|｜ㅣ]\s*(.+)$/);
   return m ? [m[1].trim(), m[2].trim()] : ["", name.trim()];
 }
 
-// ───────────────────────── start.gg ─────────────────────────
 
 const STARTGG = "https://api.start.gg/gql/alpha";
 
@@ -158,7 +147,7 @@ const EVENT_QUERY = `query Top8($slug: String) {
   }
 }`;
 
-// 20 sets × up to 5 games × 2 picks stays under start.gg's 1,000-objects-per-request limit
+// Twenty sets keeps the request under start.gg's limit of 1,000 objects.
 const SETS_QUERY = `query Picks($id: ID, $entrants: [ID]) {
   event(id: $id) {
     sets(page: 1, perPage: 20, sortType: RECENT, filters: { entrantIds: $entrants, hideEmpty: true }) {
@@ -243,7 +232,7 @@ async function gql<T>(
   return body.data;
 }
 
-/** A tournament link without an event: pick its Tekken 8 event (the biggest one) */
+// For a tournament link with no event in it, go with its biggest Tekken 8 event.
 export function pickEvent(
   events: Array<{
     slug: string;
@@ -261,7 +250,6 @@ export function pickEvent(
   );
 }
 
-/** Who played what, from game-by-game picks: most played first, up to three */
 export function charactersByEntrant(
   sets: GqlSets | null,
 ): Map<string, string[]> {
@@ -389,7 +377,7 @@ async function importStartgg(
   const ids = (event.standings?.nodes ?? [])
     .map((n) => n.entrant?.id)
     .filter(Boolean);
-  // Characters are a bonus: if this part fails, import without them
+  // Characters are a nice extra, so if this request fails we still import everything else.
   let picks = new Map<string, string[]>();
   if (ids.length)
     try {
@@ -401,19 +389,13 @@ async function importStartgg(
           })
         ).event,
       );
-    } catch {
-      /* keep going */
-    }
+    } catch {}
   return mapStartgg(event, picks);
 }
 
-// ───────────────────────── Challonge ─────────────────────────
-//
-// Two routes, tried in this order:
-// 1. API v1 with the account's API key (CHALLONGE_API_KEY). Deprecated, but it's the only route
-//    that reads anyone's public bracket: v2.1 answers 404 for tournaments outside the account.
-// 2. API v2.1 as an OAuth app (CHALLONGE_CLIENT_ID + CHALLONGE_CLIENT_SECRET, client credentials).
-//    Reads brackets owned by the site's Challonge account or its communities.
+// Challonge's newer v2.1 API only shows brackets that belong to our own account, so other organisers'
+// public brackets come from the old v1 API with the account key. v2.1, with the app's client ID and
+// secret, is just a fallback for brackets on our own account.
 
 const CHALLONGE_V1 = "https://api.challonge.com/v1";
 const CHALLONGE_V21 = "https://api.challonge.com/v2.1";
@@ -505,13 +487,12 @@ export function mapChallonge(
   };
 }
 
-/** "2024-09-01T02:12:54+10:00" → "Sep 1, 2024": the date as it was where the event happened */
+// Challonge timestamps carry the event's own time offset, so take the date as written.
 export function localDate(iso: string | null | undefined): string {
   const m = iso?.match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? formatDate(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 1000, "UTC") : "";
 }
 
-// ── v1 (account API key) ──
 
 type V1Tournament = {
   name?: string;
@@ -530,7 +511,6 @@ type V1Tournament = {
   }>;
 };
 
-/** v1's tournament (with participants) in the shape mapChallonge takes */
 export function fromV1(
   t: V1Tournament,
 ): [ChallongeTournament, ChallongeParticipant[]] {
@@ -550,12 +530,11 @@ export function fromV1(
   ];
 }
 
-/** null: v1 can't serve this one (not found, key refused, or v1 switched off), so try v2.1 */
 async function challongeV1(
   ref: ChallongeRef,
   key: string,
 ): Promise<ImportedResults | "not-found" | "refused" | null> {
-  // v1 addresses community brackets as "<community>-<url>"
+  // v1 wants community brackets written as community-url.
   const id = ref.community ? `${ref.community}-${ref.id}` : ref.id;
   const res = await fetch(
     `${CHALLONGE_V1}/tournaments/${encodeURIComponent(id)}.json?include_participants=1&api_key=${encodeURIComponent(key)}`,
@@ -578,9 +557,8 @@ async function challongeV1(
   return mapChallonge(...fromV1(body.tournament), ref);
 }
 
-// ── v2.1 (OAuth app, client credentials) ──
 
-// Reused while the function instance stays warm; Challonge tokens last a week
+// Tokens last a week, so hang on to one while this function instance stays warm.
 let cachedToken: { value: string; until: number } | null = null;
 
 async function challongeToken(
@@ -635,9 +613,9 @@ async function v21Get<T>(
       },
     });
   let res = await send(false);
-  // A cached token can be revoked early: get a new one once
+  // A cached token might have been revoked early, so try once more with a fresh one.
   if (res.status === 401) res = await send(true);
-  // v2.1 answers 403 for other people's communities and 404 for other people's brackets
+  // v2.1 says 404 for other people's brackets and 403 for other people's communities.
   if (res.status === 404 || res.status === 403)
     throw new ImportError(NOT_FOUND, 404);
   if (res.status === 401)
@@ -672,7 +650,7 @@ async function challongeV21(
     : tournament.data;
   if (!t)
     throw new ImportError("Challonge sent back something unexpected.", 502);
-  // Every page: final ranks aren't in seed order
+  // Final ranks aren't in seed order, so read every page.
   const participants: ChallongeParticipant[] = [];
   for (let page = 1; page <= MAX_PAGES; page++) {
     const res = await v21Get<ChallongeParticipant>(
@@ -718,14 +696,13 @@ function challongeAuth(): ChallongeAuth | null {
   return auth.key || auth.app ? auth : null;
 }
 
-// ───────────────────────── Handler ─────────────────────────
 
 const json = (data: unknown, status = 200, cache = false) =>
   new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      // Same link within a minute: answer from Vercel's cache instead of the bracket site
+      // If the same link comes in again within a minute, Vercel answers from its cache.
       "Cache-Control": cache
         ? "public, s-maxage=60, stale-while-revalidate=300"
         : "no-store",

@@ -1,5 +1,5 @@
-// Screenshot every character's built-in art in the standings, 8 at a time.
-// Usage: node scripts/check-art.mjs <outDir> [--only=clive,jin]
+// Screenshots every character's built-in art in the standings, 8 at a time.
+// Run it with: node scripts/check-art.mjs <outDir> [--only=clive,jin]
 import { chromium } from "playwright-core";
 import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync } from "node:fs";

@@ -20,7 +20,6 @@ export type LayoutProps = {
   background?: { image: BackgroundImage | null; style: BackgroundStyle };
 };
 
-/** Per-format sizes in canvas px */
 function metrics(format: Format) {
   const portrait = format.height > format.width;
   return portrait
@@ -227,17 +226,14 @@ export function BladeStandings(p: LayoutProps) {
 
 const SITE_URL = "t8.yiliya.studio";
 
-/**
- * Hashtag · site address · subtitle. Without a hashtag the address moves to the left.
- * The bracket link isn't shown: full links (start.gg/tournament/…/event/…) run too long for the
- * bar. It still goes in the text post.
- */
+// The bracket link is left out because full links run too long for the bar.
+// It's still in the text post.
 function Footer({ event, height }: { event: EventInfo; height: number }) {
   const raw = event.hashtag.trim();
   const hashtag = raw && (raw.startsWith("#") ? raw : `#${raw}`);
   const url = SITE_URL;
 
-  // Each item is its own grid cell so the URL isn't baseline-locked to the Bebas text
+  // Each item gets its own grid cell, so the small text isn't stuck on the Bebas baseline
   return (
     <footer className="blade-footer" style={{ height }}>
       {hashtag && <span className="left">{hashtag}</span>}
@@ -262,7 +258,7 @@ function BackgroundPhoto({
         alt=""
         style={{
           objectPosition: `${style.posX}% ${style.posY}%`,
-          // Scale up so blurred edges stay off-canvas
+          // Scale up a little so the blurred edges don't show
           filter: blur ? `blur(${blur}px)` : undefined,
           transform: blur ? `scale(${1 + (blur * 3) / 1000})` : undefined,
         }}

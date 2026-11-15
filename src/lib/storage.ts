@@ -1,6 +1,6 @@
 import type { ArtAsset, ArtLibrary, BackgroundImage } from "../types";
 
-// Form state in localStorage, images in IndexedDB. Storage failures are ignored.
+// Form state goes in localStorage and pictures in IndexedDB. If storage fails, we carry on without it.
 
 const STATE_KEY = "fgc-graphics:state:v1";
 
@@ -29,7 +29,7 @@ const BG_KEY = "current";
 function openDb(): Promise<IDBDatabase | null> {
   return new Promise((resolve) => {
     try {
-      // v2 adds the background store
+      // Version 2 added the background store
       const req = indexedDB.open(DB_NAME, 2);
       req.onupgradeneeded = () => {
         for (const name of [STORE, BG_STORE]) if (!req.result.objectStoreNames.contains(name)) req.result.createObjectStore(name);

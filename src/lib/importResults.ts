@@ -1,4 +1,3 @@
-// Turn a bracket import (from /api/import) into app state.
 import countryData from "flag-icons/country.json";
 import type { AppState, Entry, PlacementScheme } from "../types";
 import type { ImportedPlayer, ImportedResults } from "../../api/import";
@@ -13,7 +12,7 @@ const COUNTRY_CODES = new Map(
     .filter((c) => c.iso && /^[a-z]{2}$/.test(c.code))
     .map((c) => [c.name.toLowerCase(), c.code]),
 );
-// How bracket sites and players commonly write them
+// Ways bracket sites and players tend to write country names
 const ALIASES: Record<string, string> = {
   "united states": "us",
   usa: "us",
@@ -41,7 +40,6 @@ const ALIASES: Record<string, string> = {
   "the netherlands": "nl",
 };
 
-/** "Japan" / "JP" / "United States" → "jp" / "us"; unknown → "" */
 export function countryCode(name: string): string {
   const n = name.trim().toLowerCase();
   if (!n) return "";
@@ -49,12 +47,10 @@ export function countryCode(name: string): string {
   return ALIASES[n] ?? COUNTRY_CODES.get(n) ?? "";
 }
 
-/** Bracket-site character name → roster name ("Jack 8" → "Jack-8"); unknown names kept as written */
 export function rosterName(name: string): string {
   return rosterEntry(name)?.name ?? matchRosterName(name) ?? name.trim();
 }
 
-/** Which placement scheme the imported placements follow */
 export function detectScheme(placements: number[]): PlacementScheme {
   if (placements.every((p, i) => p === schemePlacement("DE", i))) return "DE";
   if (placements.every((p, i) => p === schemePlacement("SE", i))) return "SE";
@@ -74,11 +70,10 @@ export function toEntry(p: ImportedPlayer): Entry {
   };
 }
 
-/** Replace the event and top 8 with an import; style, theme and art are untouched */
 export function applyImport(s: AppState, r: ImportedResults): AppState {
   let entries = r.players.map(toEntry);
   const scheme = detectScheme(entries.map((e) => e.placement));
-  // Always eight rows to edit
+  // Always leave eight rows to edit
   while (entries.length < 8) entries.push({ ...emptyEntry(), placement: entries.length + 1 });
   if (scheme !== "custom") entries = applyScheme(entries, scheme);
   return {

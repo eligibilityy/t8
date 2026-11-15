@@ -1,7 +1,6 @@
-// Colour maths for the theme editor. Hex strings are "#rrggbb".
 
 export type RGB = { r: number; g: number; b: number };
-/** h 0–360, s and v 0–1 */
+// hue in degrees, saturation and value from 0 to 1
 export type HSV = { h: number; s: number; v: number };
 
 export function hexToRgb(hex: string): RGB {
@@ -39,14 +38,12 @@ export function hsvToRgb({ h, s, v }: HSV): RGB {
 export const hexToHsv = (hex: string) => rgbToHsv(hexToRgb(hex));
 export const hsvToHex = (hsv: HSV) => rgbToHex(hsvToRgb(hsv));
 
-/** Blend a toward b by t (0–1) */
 export function mix(a: string, b: string, t: number): string {
   const A = hexToRgb(a);
   const B = hexToRgb(b);
   return rgbToHex({ r: A.r + (B.r - A.r) * t, g: A.g + (B.g - A.g) * t, b: A.b + (B.b - A.b) * t });
 }
 
-/** WCAG relative luminance */
 export function luminance(hex: string): number {
   const { r, g, b } = hexToRgb(hex);
   const [R, G, B] = [r, g, b].map((v) => {
@@ -56,7 +53,6 @@ export function luminance(hex: string): number {
   return 0.2126 * R + 0.7152 * G + 0.0722 * B;
 }
 
-/** WCAG contrast ratio (1–21) */
 export function contrastRatio(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
@@ -64,15 +60,12 @@ export function contrastRatio(a: string, b: string): number {
 
 export const isDark = (hex: string) => luminance(hex) < 0.2;
 
-/** Of the candidates, the one that reads best on `bg` */
 export function bestOn(bg: string, candidates: string[]): string {
   return candidates.reduce((best, c) => (contrastRatio(c, bg) > contrastRatio(best, bg) ? c : best));
 }
 
-/**
- * A few representative colours of an image (k-means on a small downscale). Skips near-black
- * and near-white pixels so the palette favours the picture's actual colours.
- */
+// Picks out a picture's main colours. Near-black and near-white pixels are skipped,
+// so the palette shows the picture's actual colours.
 export function paletteFromPixels(data: Uint8ClampedArray, k = 6): string[] {
   const px: RGB[] = [];
   for (let i = 0; i < data.length; i += 4) {
@@ -84,7 +77,7 @@ export function paletteFromPixels(data: Uint8ClampedArray, k = 6): string[] {
     px.push(p);
   }
   if (!px.length) return [];
-  // Seed from evenly spaced pixels sorted by brightness, for a stable result
+  // Seeding from pixels sorted by brightness gives the same result every time
   const sorted = [...px].sort((a, b) => a.r + a.g + a.b - (b.r + b.g + b.b));
   let centers = Array.from({ length: Math.min(k, sorted.length) }, (_, i) => sorted[Math.floor(((i + 0.5) * sorted.length) / k)]);
   let counts: number[] = [];
@@ -105,7 +98,6 @@ export function paletteFromPixels(data: Uint8ClampedArray, k = 6): string[] {
     }
     centers = centers.map((c, i) => (counts[i] ? { r: sums[i].r / counts[i], g: sums[i].g / counts[i], b: sums[i].b / counts[i] } : c));
   }
-  // Most common first; drop near-duplicates
   const out: string[] = [];
   centers
     .map((c, i) => ({ hex: rgbToHex(c), n: counts[i] }))

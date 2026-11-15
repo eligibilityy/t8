@@ -57,7 +57,7 @@ describe("start.gg import", () => {
     name: "Tekken 8",
     slug: "tournament/evo-2026/event/tekken-8",
     numEntrants: 1355,
-    startAt: 1782604800, // 2026-06-28 00:00 UTC
+    startAt: 1782604800, // midnight UTC on June 28
     isOnline: false,
     videogame: { displayName: "TEKKEN 8" },
     tournament: {
@@ -96,7 +96,7 @@ describe("start.gg import", () => {
     expect(r.event).toEqual({
       name: "Evo 2026",
       game: "Tekken 8",
-      date: "Jun 27, 2026", // midnight UTC is still the 27th in Las Vegas
+      date: "Jun 27, 2026", // which is still the 27th in Las Vegas
       location: "Las Vegas, NV",
       entrants: "1355",
       url: "start.gg/tournament/evo-2026/event/tekken-8",
@@ -231,7 +231,7 @@ describe("Challonge requests", () => {
         return ok({ access_token: `tok${tokenCalls}`, expires_in: 604800 });
       }
       const auth = new Headers(init?.headers).get("Authorization");
-      // First data request with the first token is rejected once, to exercise the refresh
+      // Reject the first token once, to check that we fetch a new one
       if (auth === "Bearer tok1") return new Response("{}", { status: 401 });
       if (url.includes("/participants.json")) {
         const page = Number(new URL(url).searchParams.get("page"));
@@ -258,7 +258,7 @@ describe("Challonge requests", () => {
     expect(headers.get("Content-Type")).toBe("application/vnd.api+json");
     expect(data.every((c) => new URL(c.url).searchParams.get("community_id") === "dlsl")).toBe(true);
     expect(data.some((c) => c.url.includes("/tournaments/weekly5.json"))).toBe(true);
-    // 130 people at 100 per page: pages 1 and 2, by numeric tournament id
+    // 130 people at 100 a page means two pages, fetched by the tournament's numeric id
     expect(data.filter((c) => c.url.includes("/tournaments/777/participants.json")).map((c) => new URL(c.url).searchParams.get("page"))).toEqual(["1", "2"]);
   });
 
@@ -291,7 +291,7 @@ describe("Challonge requests", () => {
     expect(v1.pathname).toBe("/v1/tournaments/saltyeu-TekkenTeams.json");
     expect(v1.searchParams.get("api_key")).toBe("legacy");
     expect(body.players.map((p: { prefix: string; tag: string }) => `${p.prefix}|${p.tag}`)).toEqual(["|Team Alisa", "GP|Miks20z"]);
-    // Started 02:12 on Sep 1 in Australia (still Aug 31 in UTC): use the event's own date
+    // It started at 2am on Sep 1 in Australia, which was still Aug 31 in UTC
     expect(body.event).toMatchObject({ game: "Tekken 8", url: "saltyeu.challonge.com/TekkenTeams", date: "Sep 1, 2024" });
   });
 

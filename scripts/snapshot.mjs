@@ -1,5 +1,5 @@
-// Visual smoke test: screenshots the editor and downloads each export.
-// Usage: npm run build && node scripts/snapshot.mjs <outDir>
+// Takes screenshots of the editor and downloads each export, to check nothing looks broken.
+// Run it with: npm run build && node scripts/snapshot.mjs <outDir>
 import { chromium } from "playwright-core";
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
@@ -9,7 +9,7 @@ const args = process.argv.slice(2);
 const outDir = resolve(args.find((a) => !a.startsWith("--")) ?? "snapshots");
 mkdirSync(outDir, { recursive: true });
 
-// Synthetic dusk skyline (not game art)
+// A made-up dusk skyline, so the test doesn't need game art
 const TEST_BACKGROUND = `<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="1440">
   <defs><linearGradient id="g" x2="0" y2="1"><stop offset="0" stop-color="#1b2a6b"/><stop offset=".55" stop-color="#c2477a"/><stop offset="1" stop-color="#ffb35c"/></linearGradient></defs>
   <rect width="2560" height="1440" fill="url(#g)"/>
@@ -17,7 +17,7 @@ const TEST_BACKGROUND = `<svg xmlns="http://www.w3.org/2000/svg" width="2560" he
   <path d="M0 1100H180V820H320V960H460V700H600V1000H780V860H920V620H1060V980H1240V780H1400V1040H1560V740H1700V1000H1880V880H2040V660H2200V960H2380V820H2560V1440H0Z" fill="#141022"/>
 </svg>`;
 
-// No shell, so kill() stops it
+// No shell, so kill() really stops the server
 const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--port", "4179", "--strictPort"], { stdio: "pipe" });
 await new Promise((resolveReady, reject) => {
   server.stdout.on("data", (d) => String(d).includes("4179") && resolveReady());
@@ -58,7 +58,6 @@ try {
   await exportAs("Standings", "16:9 · 1920×1080", "standings-16x9.png");
   await exportAs("Standings", "4:5 · 1080×1350", "standings-4x5.png");
 
-  // With a background
   await page.getByRole("button", { name: /^Style/ }).click();
   await page.getByRole("button", { name: "Choose background" }).click();
   await page.locator(".bg-popup input[type=file]").setInputFiles({ name: "test-stage.svg", mimeType: "image/svg+xml", buffer: Buffer.from(TEST_BACKGROUND) });

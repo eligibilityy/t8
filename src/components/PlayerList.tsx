@@ -25,10 +25,8 @@ const matchCountry = (c: Country, q: string) => {
 const FlagChip = ({ code }: { code: string }) =>
   /^[a-z]{2}$/.test(code) ? <span className={`fi fi-${code} flag-chip`} aria-hidden="true" /> : <span className="flag-chip empty" />;
 
-/**
- * Slides rows to their new place after a reorder (FLIP). Each slide starts from where
- * the row is on screen right now, so quick repeated moves redirect instead of jumping.
- */
+// Slides rows to their new spots after a reorder. Each slide starts from wherever the row is
+// on screen, so pressing the arrows quickly doesn't make anything jump.
 function useReorderAnimation(list: RefObject<HTMLOListElement>) {
   const lastTops = useRef(new Map<string, number>());
   useLayoutEffect(() => {
@@ -126,7 +124,7 @@ export function PlayerList({ entries, scheme, art, onChange, onMove }: Props) {
               )}
               onChange={(v) => onChange(i, { country: v.toLowerCase().replace(/[^a-z ]/g, "") })}
               onBlur={() => {
-                // "japan" → "jp", else clear
+                // Turn something like "japan" into "jp", or clear it if nothing matches
                 if (!e.country || /^[a-z]{2}$/.test(e.country)) return;
                 onChange(i, { country: COUNTRIES.find((c) => matchCountry(c, e.country))?.code ?? "" });
               }}

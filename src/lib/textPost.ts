@@ -3,7 +3,6 @@ import type { Entry, EventInfo } from "../types";
 const MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 const KEYCAPS = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
-/** "kr" → 🇰🇷 */
 export function flagEmoji(iso2: string): string {
   const c = iso2.trim().toUpperCase();
   if (!/^[A-Z]{2}$/.test(c)) return "";

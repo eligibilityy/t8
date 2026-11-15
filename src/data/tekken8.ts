@@ -1,4 +1,4 @@
-// Roster from `npm run sync:roster`
+// The roster comes from `npm run sync:roster`.
 import rosterData from "./tekken8-roster.json";
 
 export type RosterCharacter = {
@@ -14,7 +14,6 @@ export function rosterEntry(name: string): RosterCharacter | undefined {
   return ROSTER.find((c) => normaliseName(c.name) === n);
 }
 
-/** "devil_jin.png" → "deviljin" */
 export function normaliseName(s: string): string {
   return s
     .toLowerCase()
@@ -22,7 +21,7 @@ export function normaliseName(s: string): string {
     .replace(/[^a-z0-9]/g, "");
 }
 
-/** Filename -> roster name; longest match wins. */
+// Longest match wins, so "devil_jin.png" is Devil Jin and not Jin.
 export function matchRosterName(
   filename: string,
   roster = TEKKEN8_ROSTER,

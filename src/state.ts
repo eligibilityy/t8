@@ -68,7 +68,6 @@ export const emptyEntry = (): Entry => ({
   characters: [{ name: "" }],
 });
 
-/** Merge saved state with defaults. */
 export function hydrate(saved: Partial<AppState> | null): AppState {
   const d = defaultState();
   if (!saved) return d;

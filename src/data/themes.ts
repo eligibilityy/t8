@@ -1,7 +1,6 @@
 import type { Format, Theme } from "../types";
 import { bestOn, contrastRatio, isDark, mix } from "../lib/color";
 
-// Bebas for display, Inter for small text, JetBrains Mono for handles, URLs and meta
 const display = "'Bebas Neue', sans-serif";
 const body = "InterVariable, system-ui, sans-serif";
 const mono = "'JetBrains Mono Variable', ui-monospace, monospace";
@@ -93,14 +92,13 @@ export type ThemeColorKey = "bg" | "bg2" | "surface" | "surfaceEdge" | "accent" 
 
 type ColorInfo = { key: ThemeColorKey; label: string; hint: string };
 
-/** The three choices that set the look; everything else is matched to them */
+// These three set the look. The rest are matched to them.
 export const KEY_COLORS: ColorInfo[] = [
   { key: "bg", label: "Background", hint: "Behind everything" },
   { key: "accent", label: "Accent", hint: "Title, top 3, bottom bar" },
   { key: "accent2", label: "Second accent", hint: "Highlights" },
 ];
 
-/** Matched colours: derived from the key colours until set by hand */
 export const MATCHED_COLORS: ColorInfo[] = [
   { key: "accentInk", label: "Text on accent", hint: "Readable on the accent" },
   { key: "text", label: "Text", hint: "Names and headings" },
@@ -112,7 +110,6 @@ export const MATCHED_COLORS: ColorInfo[] = [
 
 const COLOR_KEYS: ThemeColorKey[] = [...KEY_COLORS, ...MATCHED_COLORS].map((c) => c.key);
 
-/** What each matched colour is worked out from */
 const SOURCES: Partial<Record<ThemeColorKey, ThemeColorKey[]>> = {
   bg2: ["bg", "accent"],
   surface: ["bg"],
@@ -122,7 +119,6 @@ const SOURCES: Partial<Record<ThemeColorKey, ThemeColorKey[]>> = {
   accentInk: ["accent"],
 };
 
-/** The matched value for `key`, from the theme's other colours */
 export function deriveColor(key: ThemeColorKey, t: Theme): string {
   const dark = isDark(t.bg);
   switch (key) {
@@ -137,8 +133,8 @@ export function deriveColor(key: ThemeColorKey, t: Theme): string {
     case "textDim":
       return mix(t.text, t.bg, 0.42);
     case "accentInk":
-      // White reads best on vivid colours even where the WCAG maths slightly prefers black;
-      // the accent sits behind big display text, so 3:1 is enough
+      // White looks better on bright colours even when the contrast maths slightly prefers black.
+      // The accent only sits behind big text, so 3:1 is plenty.
       return contrastRatio("#ffffff", t.accent) >= 3 ? "#ffffff" : bestOn(t.accent, ["#ffffff", "#111111"]);
     default:
       return t[key];
@@ -148,15 +144,12 @@ export function deriveColor(key: ThemeColorKey, t: Theme): string {
 export const isMatched = (key: ThemeColorKey) => key in SOURCES;
 export const isAuto = (t: Theme, key: ThemeColorKey) => isMatched(key) && !t.manual?.includes(key);
 
-/**
- * Set one colour and update the matched colours that depend on it (unless the user set them
- * by hand). Setting a matched colour by hand marks it manual.
- */
+// Changing a colour also updates the matched colours that depend on it, unless they were set by hand.
 export function setThemeColor(t: Theme, key: ThemeColorKey, hex: string): Partial<Theme> {
   const next: Theme = { ...t, [key]: hex };
   const manual = new Set(t.manual ?? []);
   if (isMatched(key)) manual.add(key);
-  // Follow chains like bg → text → small text
+  // A few passes, so chains like background to text to small text all update
   const changed = new Set<ThemeColorKey>([key]);
   for (let pass = 0; pass < 3; pass++) {
     for (const [k, from] of Object.entries(SOURCES) as Array<[ThemeColorKey, ThemeColorKey[]]>) {
@@ -173,20 +166,17 @@ export function setThemeColor(t: Theme, key: ThemeColorKey, hex: string): Partia
   return patch;
 }
 
-/** Back to the matched value (and let it follow the key colours again) */
 export function resetThemeColor(t: Theme, key: ThemeColorKey): Partial<Theme> {
   const manual = (t.manual ?? []).filter((k) => k !== key);
   return { ...setThemeColor({ ...t, manual }, key, deriveColor(key, t)), manual };
 }
 
-/** Readability checks: the colour, what it sits on, and the lowest acceptable ratio */
 export const CONTRAST_CHECKS: Partial<Record<ThemeColorKey, { on: ThemeColorKey; min: number; what: string }>> = {
   accentInk: { on: "accent", min: 3, what: "on the accent" },
   text: { on: "surface", min: 3, what: "on panels" },
   textDim: { on: "bg", min: 2.5, what: "on the background" },
 };
 
-/** "#abc" / "abc" / "#aabbcc" → "#aabbcc", or null */
 export function normalizeHex(value: string): string | null {
   const m = value.trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (!m) return null;
@@ -204,7 +194,6 @@ function uniqueLabel(label: string, existing: Theme[]): string {
   return `${label} ${n}`;
 }
 
-/** New custom theme copied from `base` */
 export function newCustomTheme(base: Theme, existing: Theme[]): Theme {
   const { note: _note, ...rest } = base;
   return {
@@ -215,16 +204,14 @@ export function newCustomTheme(base: Theme, existing: Theme[]): Theme {
   };
 }
 
-// ── Theme list operations on app state ──
 type ThemeState = { themeId: string; customThemes: Theme[] };
 
-/** Copy the selected theme and select the copy */
 export function createTheme<S extends ThemeState>(s: S): S {
   const t = newCustomTheme(getTheme(s.themeId, s.customThemes), s.customThemes);
   return { ...s, customThemes: [...s.customThemes, t], themeId: t.id };
 }
 
-/** Edit a theme; editing a built-in saves the change on a copy ("Custom Heat") */
+// Editing a built-in theme saves the change to a copy, like "Custom Heat".
 export function updateTheme<S extends ThemeState>(s: S, id: string, patch: Partial<Theme>): S {
   if (isCustomTheme(id)) return { ...s, customThemes: s.customThemes.map((t) => (t.id === id ? { ...t, ...patch } : t)) };
   const base = getTheme(id);
@@ -241,7 +228,6 @@ export function deleteTheme<S extends ThemeState>(s: S, id: string): S {
   };
 }
 
-/** Undo a delete: put the theme back where it was and select it */
 export function restoreTheme<S extends ThemeState>(s: S, theme: Theme, index: number): S {
   if (s.customThemes.some((t) => t.id === theme.id)) return s;
   const list = [...s.customThemes];
@@ -249,7 +235,6 @@ export function restoreTheme<S extends ThemeState>(s: S, theme: Theme, index: nu
   return { ...s, customThemes: list, themeId: theme.id };
 }
 
-/** Rebuild saved custom themes, dropping anything malformed */
 export function hydrateCustomThemes(saved: unknown): Theme[] {
   if (!Array.isArray(saved)) return [];
   const fallback = THEMES[0];
@@ -259,7 +244,7 @@ export function hydrateCustomThemes(saved: unknown): Theme[] {
     const t: Theme = { ...fallback, id: raw.id, label: typeof raw.label === "string" ? raw.label : "My theme" };
     delete t.note;
     for (const k of COLOR_KEYS) t[k] = (typeof raw[k] === "string" && normalizeHex(raw[k])) || fallback[k];
-    // Themes saved before matching existed keep every colour exactly as the user set it
+    // Themes saved before matching existed keep their colours exactly as they were
     t.manual = Array.isArray(raw.manual)
       ? raw.manual.filter((k): k is ThemeColorKey => typeof k === "string" && isMatched(k as ThemeColorKey))
       : COLOR_KEYS.filter(isMatched);

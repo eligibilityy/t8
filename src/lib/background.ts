@@ -14,7 +14,6 @@ export async function uploadBackground(file: File): Promise<BackgroundImage> {
   return { src: await processBackground(file), id: "upload", label: file.name.replace(/\.[a-z0-9]+$/i, "") };
 }
 
-/** Downscale to just cover every export format, as JPEG. */
 async function processBackground(blob: Blob): Promise<string> {
   const img = await decode(blob);
   try {
@@ -35,7 +34,7 @@ async function processBackground(blob: Blob): Promise<string> {
   }
 }
 
-/** createImageBitmap rejects SVG; fall back to <img>. */
+// createImageBitmap won't take SVG, so fall back to an <img>.
 async function decode(blob: Blob): Promise<ImageBitmap | HTMLImageElement> {
   try {
     return await createImageBitmap(blob);

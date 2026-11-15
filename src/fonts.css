@@ -1,12 +1,7 @@
-/*
- * Inter, from rsms's own build (inter-ui). Fontsource's copy comes from Google Fonts, which
- * drops the character variants and stylistic sets (cv01, cv11, ss03…) the UI turns on.
- *
- * Two faces under one name: the small Latin subset covers everyday text, and the full font
- * covers everything else (ł, ő, ş, Cyrillic, Greek…). The browser only downloads the full
- * file when a page actually shows one of those characters. Declared in stylesheets, not via
- * the FontFace API, so html-to-image can embed them in exports.
- */
+/* The full Inter build from inter-ui. The Google Fonts copy leaves out the alternate letters (cv01, ss03 and so on) the UI uses. */
+/* Two files share one name: a small Latin one for everyday text and the full font for everything else. */
+/* The browser only downloads the full one when a page shows a character the small one doesn't have. */
+/* These live in a stylesheet rather than the FontFace API so html-to-image can embed them in exports. */
 @font-face {
   font-family: InterVariable;
   font-style: normal;
@@ -14,7 +9,7 @@
   font-display: swap;
   src: url("../node_modules/inter-ui/variable/InterVariable.woff2") format("woff2");
 }
-/* Declared last, so it's tried first for the characters it covers (glyphhanger's LATIN set) */
+/* Declared last so it's tried first for the characters it covers */
 @font-face {
   font-family: InterVariable;
   font-style: normal;

@@ -9,16 +9,16 @@ export type Entry = {
   placement: number;
   tag: string;
   sponsor: string;
-  /** ISO alpha-2, lowercase ("kr") */
+  // lowercase country code, like "kr"
   country: string;
   handle: string;
-  characters: CharacterPick[]; // 0–3
+  characters: CharacterPick[]; // up to 3
 };
 
 export type EventInfo = {
   name: string;
   game: string;
-  subtitle: string; // e.g. "TOP 8"
+  subtitle: string;
   date: string;
   location: string;
   entrants: string;
@@ -27,22 +27,20 @@ export type EventInfo = {
   scheme: PlacementScheme;
 };
 
-/** Where the face is in a piece of art; layouts scale the image around it. */
+// Where the face is, so layouts can scale the art around it
 export type ArtFrame = {
-  /** Face centre, % of image */
+  // face centre, as a % of the image
   focusX: number;
   focusY: number;
-  /** Face height / image height */
+  // face height as a share of the image height
   face: number;
   zoom: number;
 };
 
 export type ArtAsset = ArtFrame & {
   src: string;
-  /** Small face-framed square for pickers (built-in art only) */
   thumb?: string;
   source?: "builtin" | "upload";
-  /** Cropped by hand */
   manual?: boolean;
 };
 
@@ -50,18 +48,16 @@ export type ArtLibrary = Record<string, ArtAsset>;
 
 export type Theme = {
   id: string;
-  /** Short name shown in the editor */
   label: string;
-  /** Colour summary for built-ins, e.g. "magenta / cyan" */
   note?: string;
-  /** Matched colours the user set by hand; the rest follow the key colours */
+  // matched colours the user set by hand
   manual?: string[];
   bg: string;
   bg2: string;
   surface: string;
   surfaceEdge: string;
   accent: string;
-  accentInk: string; // text on accent
+  accentInk: string; // text that sits on the accent
   accent2: string;
   text: string;
   textDim: string;
@@ -72,17 +68,15 @@ export type Theme = {
 
 export type BackgroundImage = {
   src: string;
-  /** "stage:<slug>" or "upload" */
+  // "stage:<slug>" or "upload"
   id: string;
   label: string;
 };
 
 export type BackgroundStyle = {
-  /** Shade opacity, 0–1 */
+  // shade opacity from 0 to 1
   dim: number;
-  /** px */
   blur: number;
-  /** object-position, % */
   posX: number;
   posY: number;
 };
@@ -93,7 +87,6 @@ export type AppState = {
   event: EventInfo;
   entries: Entry[];
   themeId: string;
-  /** Themes the user made; ids start with "custom-" */
   customThemes: Theme[];
   standingsFormat: string;
   background: BackgroundStyle;

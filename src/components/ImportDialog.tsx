@@ -12,7 +12,6 @@ import { Spinner, SwapLabel } from "./ui";
 
 const SOURCE_NAME = { startgg: "start.gg", challonge: "Challonge" } as const;
 
-/** Paste a bracket link, preview the top 8, then replace the current results with it */
 export function ImportDialog({
   open,
   onOpenChange,
@@ -97,7 +96,7 @@ export function ImportDialog({
                 setError("");
               }}
               onPaste={(e) => {
-                // Look up as soon as a link is pasted
+                // Look it up as soon as a link is pasted
                 const text = e.clipboardData.getData("text").trim();
                 if (text) {
                   e.preventDefault();

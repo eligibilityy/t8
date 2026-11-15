@@ -1,4 +1,3 @@
-// Base UI wrappers, styled in App.css
 import type { ReactNode } from "react";
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Field } from "@base-ui/react/field";
@@ -70,7 +69,6 @@ export function SelectField<T extends string>({
   );
 }
 
-/** Free-text input with suggestions; any value is allowed. */
 export function SuggestInput<Item>({
   value,
   onChange,
@@ -160,10 +158,8 @@ export function RangeField({
   );
 }
 
-/**
- * Button label that cross-fades between states. Every label sits in the same grid cell,
- * so the button is always as wide as the longest one and never jumps.
- */
+// All the labels share one grid cell, so the button stays as wide as the longest one
+// and doesn't change size when the label changes.
 export function SwapLabel<K extends string>({ state, labels }: { state: K; labels: Record<K, ReactNode> }) {
   return (
     <span className="swap">
@@ -178,7 +174,7 @@ export function SwapLabel<K extends string>({ state, labels }: { state: K; label
 
 export const Spinner = () => <span className="spinner" aria-hidden="true" />;
 
-// Icons are SVG rather than text glyphs (✓, ⋯) so they never pull in a font file
+// SVG icons instead of ✓ and ⋯ characters, so they never pull in the big Inter font file.
 export function CheckIcon({ size = 12 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true">

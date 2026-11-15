@@ -2,7 +2,7 @@ import type { Entry, PlacementScheme } from "../types";
 
 export function schemePlacement(scheme: Exclude<PlacementScheme, "custom">, index: number): number {
   if (scheme === "SE") return index + 1;
-  // Double elim: 1,2,3,4,5,5,7,7,9×4,13×4,…
+  // Double elim goes 1, 2, 3, 4, 5, 5, 7, 7, then 9th and 13th four times each, then eights, and so on
   if (index < 4) return index + 1;
   let place = 5;
   let size = 2;
@@ -34,7 +34,6 @@ export function ordinal(n: number): string {
   }
 }
 
-/** 5 → ["5", "TH"] */
 export function ordinalParts(n: number): [string, string] {
   const o = ordinal(n);
   return [String(n), o.slice(String(n).length).toUpperCase()];

@@ -1,5 +1,5 @@
-// Sync the Tekken 8 roster from Wavu Wiki into src/data/tekken8-roster.json.
-// Usage: npm run sync:roster
+// Pulls the Tekken 8 roster from Wavu Wiki into src/data/tekken8-roster.json.
+// Run it with: npm run sync:roster
 import { writeFileSync } from "node:fs";
 
 const API = "https://wavu.wiki/w/api.php";

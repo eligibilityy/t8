@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { ArtAsset } from "../types";
 
-/** Single-line text that shrinks to fit its container. */
 export function FitText({
   children,
   max,
@@ -59,7 +58,6 @@ export function FitText({
   );
 }
 
-/** Flag for an ISO code, otherwise the code as text. */
 export function Flag({ code, size = 32 }: { code: string; size?: number }) {
   const c = code.trim().toLowerCase();
   if (!c) return null;
@@ -74,7 +72,6 @@ export function Flag({ code, size = 32 }: { code: string; size?: number }) {
   return <span className="country-code">{c.toUpperCase()}</span>;
 }
 
-/** Character art framed on its face, or initials when there's no art. */
 export function CharArt({
   name,
   art,
@@ -85,9 +82,9 @@ export function CharArt({
   name: string;
   art?: ArtAsset;
   style?: CSSProperties;
-  /** Face height / slot height */
+  // face height as a share of the slot
   fill?: number;
-  /** Face centre Y in the slot, % */
+  // where the face centre sits, as a % of the slot height
   anchorY?: number;
 }) {
   if (!art) {

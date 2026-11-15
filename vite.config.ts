@@ -4,10 +4,8 @@ import { transform } from "esbuild";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 
-/**
- * Serve api/import.ts at /api/import in `vite dev` and `vite preview`, the way Vercel does in
- * production: compiled as one plain ES module, with keys from .env.local.
- */
+// Runs api/import.ts at /api/import during dev and preview, the same way Vercel does:
+// as one plain ES module, with keys from .env.local.
 function importApi(): Plugin {
   const handle = async (req: IncomingMessage, res: ServerResponse) => {
     try {
@@ -34,8 +32,7 @@ function importApi(): Plugin {
 }
 
 export default defineConfig(({ mode }) => {
-  // Bracket-site keys for the import endpoint (never sent to the browser). Not in tests:
-  // they stub their own, and real keys would change what the tests exercise.
+  // Load the import keys, except in tests, which bring their own.
   if (mode !== "test")
     for (const [k, v] of Object.entries(loadEnv(mode, process.cwd(), ""))) process.env[k] ??= v;
   return { plugins: [react(), importApi()] };

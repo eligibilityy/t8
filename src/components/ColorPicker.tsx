@@ -7,14 +7,10 @@ import { contrastRatio, hexToHsv, hsvToHex, type HSV } from "../lib/color";
 export type SwatchGroup = { title: string; colors: string[] };
 export type ContrastCheck = { on: string; min: number; what: string };
 
-// Chromium's EyeDropper; not in TypeScript's DOM types yet
+// Chromium has an EyeDropper, but TypeScript doesn't know about it yet.
 type EyeDropperCtor = new () => { open: () => Promise<{ sRGBHex: string }> };
 const EyeDropper = (globalThis as { EyeDropper?: EyeDropperCtor }).EyeDropper;
 
-/**
- * A colour setting: the row shows swatch, name and hex; clicking it opens the picker beside the
- * sidebar so the graphic stays in view while you choose.
- */
 export function ColorRow({
   label,
   hint,
@@ -30,12 +26,11 @@ export function ColorRow({
   onChange: (hex: string) => void;
   swatches: SwatchGroup[];
   contrast?: ContrastCheck;
-  /** Controls after the row (Auto toggle, warnings) */
   aside?: ReactNode;
 }) {
   const trigger = useRef<HTMLButtonElement>(null);
   const [offset, setOffset] = useState(14);
-  /** Open just past the sidebar's edge, so the picker covers the graphic, not the settings */
+  // Open just past the sidebar's edge rather than on top of the other settings.
   const measure = () => {
     const t = trigger.current?.getBoundingClientRect();
     const bar = trigger.current?.closest(".sidebar")?.getBoundingClientRect();
@@ -68,7 +63,6 @@ export function ColorRow({
   );
 }
 
-/** Saturation/brightness area + hue slider + hex, with swatches and an eyedropper */
 export function ColorPicker({
   value,
   onChange,
@@ -84,12 +78,12 @@ export function ColorPicker({
   const emitted = useRef(value);
   const frame = useRef(0);
   const pending = useRef<string | null>(null);
-  // Latest handler: the first edit of a built-in theme swaps in a copy mid-drag
+  // The first edit of a built-in theme swaps in a copy mid-drag, so always call the latest handler.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
-  // Outside changes (a swatch, undo, auto colours) move the picker; our own echoes don't,
-  // so the hue survives greys and blacks
+  // Follow outside changes like swatches or auto colours, but not our own echoes,
+  // so the hue doesn't get lost on greys and black.
   useEffect(() => {
     if (value === emitted.current) return;
     emitted.current = value;
@@ -99,7 +93,7 @@ export function ColorPicker({
 
   useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
-  /** Update the picker now; tell the app at most once a frame */
+  // The picker updates right away, but the app only hears about it once a frame.
   const emit = (next: HSV) => {
     setHsv(next);
     const hex = hsvToHex(next);
@@ -154,9 +148,7 @@ export function ColorPicker({
                 const { sRGBHex } = await new EyeDropper().open();
                 const h = normalizeHex(sRGBHex);
                 if (h) setHex(h);
-              } catch {
-                /* cancelled */
-              }
+              } catch {}
             }}
           >
             <EyedropperIcon />
@@ -199,7 +191,6 @@ export function ColorPicker({
   );
 }
 
-/** 2D area: x = saturation, y = brightness. Tracks the pointer 1:1; arrow keys nudge (Shift: ×10). */
 function SatValArea({ hsv, onChange }: { hsv: HSV; onChange: (hsv: HSV) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const set = (e: PointerEvent) => {

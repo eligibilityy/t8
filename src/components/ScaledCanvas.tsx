@@ -11,13 +11,12 @@ import {
 } from "react";
 import { FIT, clampView, project, softPan, bounds, zoomAt, type Box, type View } from "../lib/panZoom";
 
-/** One-column layout; keep in sync with the media query in App.css */
+// Has to match the one-column media query in App.css.
 const STACKED_QUERY = "(max-width: 900px), (max-height: 480px)";
-/** Highest zoom, as a share of the graphic's real size */
+// Zoom stops at twice the graphic's actual size.
 const MAX_REAL = 2;
 const STEP = 1.5;
 const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
-/** Frame border, both sides */
 const BORDER = 2;
 
 type Point = { x: number; y: number };
@@ -34,10 +33,7 @@ function zoomHint() {
   return `${isMac() ? "Pinch or ⌘ + scroll" : "Ctrl + scroll"} to zoom · double-click for a close-up`;
 }
 
-/**
- * Fixed-size canvas scaled to fit, with zoom and pan. The ref is the unscaled node (used for export).
- * Gestures track the pointer 1:1; buttons and double-taps animate; keyboard zoom is instant.
- */
+// The ref points at the unscaled graphic, which is what gets exported.
 export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: number; children: ReactNode }>(
   function ScaledCanvas({ width, height, children }, ref) {
     const outer = useRef<HTMLDivElement>(null);
@@ -56,8 +52,8 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       const el = outer.current;
       if (!el) return;
       const update = () => {
-        // Stacked, the page scrolls, so allow most of the screen. Side by side, fill the space
-        // between the toolbar and the bottom of the window, leaving room for the zoom row.
+        // In one column the page scrolls, so most of the screen is fine. Side by side, fill the space
+        // under the toolbar and leave room for the zoom row.
         let maxH = window.innerHeight * 0.9;
         if (!window.matchMedia(STACKED_QUERY).matches) {
           const stage = el.closest<HTMLElement>(".stage");
@@ -91,7 +87,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       };
     }, [width, height, fit]);
 
-    /** Show a view. `ms` animates it; gestures pass nothing so the graphic tracks 1:1. */
+    // Gestures pass no duration so the graphic sticks to your fingers. Buttons animate.
     const apply = useCallback(
       (v: View, ms = 0) => {
         view.current = v;
@@ -105,10 +101,9 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       [fit],
     );
 
-    // New size or format: back to the whole graphic
     useLayoutEffect(() => apply(FIT), [apply, width, height]);
 
-    /** Freeze a running glide where it is on screen, so a grab starts from there */
+    // Stop a glide where it is, so grabbing it mid-glide doesn't make it jump.
     const grabPresentation = () => {
       const el = content.current;
       if (!el || el.style.transition === "none") return;
@@ -128,14 +123,14 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
 
     const zoomBy = (factor: number, at: Point, ms = 0) => apply(zoomAt(box(), view.current, view.current.z * factor, at.x, at.y), ms);
     const toFit = (ms = 0) => apply(FIT, ms);
-    /** Double-tap: zoomed in → fit; at fit → real size (or 2× if fit is already close to it) */
+    // Double-tap goes to actual size (or 2x if that's barely bigger), and back out again.
     const toggleAt = (at: Point) => {
       if (view.current.z > 1.01) return toFit(320);
       const target = Math.max(2, 1 / fit);
       apply(zoomAt(box(), view.current, target, at.x, at.y), 320);
     };
 
-    // Wheel: Ctrl/⌘ + wheel (and trackpad pinch) zooms at the cursor; plain wheel pans once zoomed
+    // Ctrl or ⌘ + scroll (and trackpad pinch) zooms at the cursor. Plain scrolling pans once zoomed in.
     useEffect(() => {
       const f = frame.current;
       if (!f) return;
@@ -197,7 +192,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
         const [p1, p2] = [...pointers.current.values()];
         const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
         const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-        // Keep the spot that was under the fingers under them, and follow the fingers as they move
+        // Keep whatever was under your fingers under them as they move
         const z = g.from.z * (dist / g.dist);
         const anchored = zoomAt(b, g.from, z, g.mid.x, g.mid.y);
         apply(clampView(b, { ...anchored, x: anchored.x + mid.x - g.mid.x, y: anchored.y + mid.y - g.mid.y }));
@@ -230,7 +225,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       frame.current?.removeAttribute("data-dragging");
 
       if (g?.kind === "pinch") {
-        // One finger left: carry on panning with it
+        // One finger lifted, so keep panning with the other
         const rest = [...pointers.current.values()];
         if (rest.length === 1) startPan(rest[0]);
         else gesture.current = null;
@@ -240,7 +235,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       if (g?.kind !== "pan" || e.type === "pointercancel") return;
 
       if (!g.moved) {
-        // Tap; two quick taps on the same spot toggle zoom
+        // Two quick taps in the same spot toggle zoom
         const now = performance.now();
         const prev = lastTap.current;
         if (prev && now - prev.t < 320 && Math.hypot(p.x - prev.x, p.y - prev.y) < 24) {
@@ -251,7 +246,7 @@ export const ScaledCanvas = forwardRef<HTMLDivElement, { width: number; height: 
       }
       if (g.from.z <= 1) return;
 
-      // Throw: glide to where the flick was heading, then settle inside the edges
+      // Let a quick drag glide on, then settle inside the edges
       const first = g.samples[0];
       const last = g.samples[g.samples.length - 1];
       const dt = Math.max(1, last.t - first.t);

@@ -27,7 +27,6 @@ type Props = {
   customThemes: Theme[];
   onTheme: (id: string) => void;
   onCreateTheme: () => void;
-  /** Editing a built-in saves the change on a copy */
   onUpdateTheme: (id: string, patch: Partial<Theme>) => void;
   onDeleteTheme: (id: string) => void;
   onRestoreTheme: (theme: Theme, index: number) => void;
@@ -58,7 +57,6 @@ export function StylePanel({
     index: number;
   } | null>(null);
 
-  // The undo offer goes away on its own
   useEffect(() => {
     if (!deleted) return;
     const t = setTimeout(() => setDeleted(null), 8000);
@@ -188,7 +186,6 @@ export function StylePanel({
   );
 }
 
-/** A tiny standings graphic in the theme's colours */
 function ThemePreview({ theme: t }: { theme: Theme }) {
   return (
     <span
@@ -225,7 +222,6 @@ function ThemePreview({ theme: t }: { theme: Theme }) {
   );
 }
 
-/** Key colours up front; the matched ones follow them unless set by hand */
 function ThemeEditor({
   theme,
   bgPalette,
@@ -247,7 +243,7 @@ function ThemeEditor({
     ({ key }) => !isAuto(theme, key),
   ).length;
   const [matchedOpen, setMatchedOpen] = useState(false);
-  // Open the matched colours when one of them needs attention
+  // Open this section by itself when something in it is hard to read
   useEffect(() => {
     if (lowKeys.length) setMatchedOpen(true);
   }, [lowKeys.length]);
@@ -393,7 +389,6 @@ function isLow(theme: Theme, key: ThemeColorKey): boolean {
 
 const unique = (colors: string[]) => [...new Set(colors)];
 
-/** A few colours from the background picture, for swatches */
 function useImagePalette(src: string | undefined): string[] {
   const [palette, setPalette] = useState<string[]>([]);
   useEffect(() => {
@@ -415,9 +410,7 @@ function useImagePalette(src: string | undefined): string[] {
           6,
         );
         if (alive) setPalette(colors);
-      } catch {
-        /* cross-origin picture: no swatches */
-      }
+      } catch {}
     };
     img.src = src;
     return () => {

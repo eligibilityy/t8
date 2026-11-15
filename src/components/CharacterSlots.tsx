@@ -20,7 +20,7 @@ const COLS = 5;
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const finePointer = () => window.matchMedia("(pointer: fine)").matches;
 
-/** Square portrait framed on the face: the small published thumb when there is one, else a live crop */
+// Uses the small published thumbnail when there is one, otherwise crops the full art live.
 export function CharacterFace({ name, art, size }: { name: string; art?: ArtAsset | null; size: number }) {
   if (art?.thumb && !art.manual && art.source !== "upload") {
     return <img className="char-face" src={art.thumb} alt="" width={size} height={size} loading="lazy" decoding="async" draggable={false} />;
@@ -36,10 +36,6 @@ type SlotsProps = {
   onChange: (characters: CharacterPick[]) => void;
 };
 
-/**
- * A player's characters as portrait tiles. Click to change, + to add, drag (or Alt + arrows) to
- * reorder; the first one is the main.
- */
 export function CharacterSlots({ characters, art, onChange }: SlotsProps) {
   const names = characters.map((c) => c.name).filter(Boolean);
   const listRef = useRef<HTMLUListElement>(null);
@@ -48,11 +44,10 @@ export function CharacterSlots({ characters, art, onChange }: SlotsProps) {
     null,
   );
   const suppressClick = useRef(false);
-  const [open, setOpen] = useState<number | null>(null); // slot index, or names.length for "add"
+  const [open, setOpen] = useState<number | null>(null); // which slot's picker is open; names.length means the + tile
 
   const commit = (next: string[]) => onChange(next.map((name) => ({ name })));
 
-  /** Remember where tiles are on screen, so the next render can slide them from there */
   const snapshot = () => {
     const m = new Map<string, DOMRect>();
     listRef.current?.querySelectorAll<HTMLElement>("[data-name]").forEach((el) => m.set(el.dataset.name!, el.getBoundingClientRect()));
@@ -84,7 +79,6 @@ export function CharacterSlots({ characters, art, onChange }: SlotsProps) {
     commit(next);
   };
 
-  // ── Drag to reorder: the tile follows the pointer 1:1, neighbours make room ──
   const tiles = () => Array.from(listRef.current?.querySelectorAll<HTMLElement>("[data-name]") ?? []);
 
   const onPointerDown = (e: PointerEvent, index: number) => {
@@ -119,7 +113,7 @@ export function CharacterSlots({ characters, art, onChange }: SlotsProps) {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       listRef.current?.setAttribute("data-dragging", "");
     }
-    // Keep the tile inside the row, with a little give at the ends
+    // Stop at the ends of the row, with a little stretch past them.
     const min = d.centers[0] - d.centers[d.index];
     const max = d.centers[d.centers.length - 1] - d.centers[d.index];
     const give = (v: number) => Math.sign(v) * Math.min(Math.abs(v), 24) * 0.4;
@@ -143,7 +137,7 @@ export function CharacterSlots({ characters, art, onChange }: SlotsProps) {
     if (!d || !d.dragging) return;
     suppressClick.current = true;
     const to = targetIndex(d, e.clientX - d.startX);
-    // Snapshot where everything is on screen now, then hand off to the reorder slide
+    // Note where everything is now, so the reorder can slide from there.
     snapshot();
     tiles().forEach((el) => {
       el.style.transform = "";
@@ -157,7 +151,7 @@ export function CharacterSlots({ characters, art, onChange }: SlotsProps) {
       next.splice(to, 0, n);
       commit(next);
     } else {
-      // Dropped where it started: slide back from the drop point
+      // Dropped back where it started, so just slide it home.
       const prev = before.current;
       before.current = null;
       tiles().forEach((el) => {
@@ -297,7 +291,7 @@ function PickerPopover({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner className="positioner" side="bottom" align="start" sideOffset={8} collisionPadding={12}>
-          {/* Touch screens: don't pop the keyboard up over the grid */}
+          {/* On touch screens, don't open the keyboard over the grid */}
           <Popover.Popup ref={popup} className="popup char-popup" initialFocus={finePointer() ? search : popup}>
             <CharacterPicker {...picker} searchRef={search} />
           </Popover.Popup>
@@ -308,16 +302,14 @@ function PickerPopover({
 }
 
 type PickerProps = {
-  /** Character in the slot being changed */
   current?: string;
-  /** Already on this player */
+  // already on this player
   taken: string[];
   art: ArtLibrary;
   onPick: (name: string) => void;
   footer?: ReactNode;
 };
 
-/** Search + portrait grid. Focus stays in the search box; arrows move the highlight, Enter picks. */
 function CharacterPicker({ current, taken, art, onPick, footer, searchRef }: PickerProps & { searchRef: RefObject<HTMLInputElement> }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -328,12 +320,12 @@ function CharacterPicker({ current, taken, art, onPick, footer, searchRef }: Pic
     const q = normaliseName(query);
     const matches = q
       ? TEKKEN8_ROSTER.filter((n) => normaliseName(n).includes(q)).sort(
-          // Names that start with the search come first
+          // Names that start with what you typed come first
           (a, b) => Number(!normaliseName(a).startsWith(q)) - Number(!normaliseName(b).startsWith(q)),
         )
       : TEKKEN8_ROSTER;
     const list = matches.map((name) => ({ name, custom: false }));
-    // Not in the roster (a new DLC character, say): allow it as typed
+    // Let people use a name that isn't in the roster yet, like a new DLC character
     const typed = query.trim();
     if (typed && !TEKKEN8_ROSTER.some((n) => normaliseName(n) === q)) list.push({ name: typed, custom: true });
     return list;
@@ -346,7 +338,6 @@ function CharacterPicker({ current, taken, art, onPick, footer, searchRef }: Pic
   };
 
   useLayoutEffect(() => {
-    // Start on the current character, else the first free one
     const cur = current ? options.findIndex((o) => o.name === current) : -1;
     setActive(cur >= 0 && !query ? cur : Math.max(0, firstFree(0, 1)));
   }, [options]);

@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-// Self-hosted so the export can embed them
+// Fonts are self-hosted so exports can embed them
 import "@fontsource/bebas-neue/400.css";
 import "./fonts.css";
 import "@fontsource-variable/jetbrains-mono";

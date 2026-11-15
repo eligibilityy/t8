@@ -12,7 +12,7 @@ export const DEFAULT_FRAME: ArtFrame = {
 };
 
 const isSkin = (r: number, g: number, b: number) =>
-  // RGB skin rule, widened for game lighting
+  // A basic skin-tone check, loosened a bit for game lighting
   r > 90 &&
   g > 40 &&
   b > 20 &&
@@ -22,7 +22,8 @@ const isSkin = (r: number, g: number, b: number) =>
   Math.abs(r - g) > 12 &&
   r - b < 170;
 
-/** Estimate the face in a transparent render: torso -> head top -> first skin cluster, else silhouette. */
+// Guesses where the face is in a cutout: find the torso, then the top of the head, then the first
+// patch of skin. If that fails, it falls back to the silhouette.
 export function estimateFrame(
   data: Uint8ClampedArray,
   w: number,
@@ -51,14 +52,12 @@ export function estimateFrame(
   const bh = bottom - top + 1;
   const bw = right - left + 1;
 
-  // Torso centre
   let sx = 0,
     n = 0;
   for (let y = Math.round(top + bh * 0.3); y < top + bh * 0.55; y++)
     for (let x = left; x <= right; x++) if (opaque(x, y)) ((sx += x), n++);
   const cxBody = n ? sx / n : (left + right) / 2;
 
-  // Head top above the torso
   const half = Math.max(4, Math.min(bw * 0.22, h * 0.18));
   const x0 = Math.max(0, Math.round(cxBody - half));
   const x1 = Math.min(w - 1, Math.round(cxBody + half));
@@ -73,7 +72,6 @@ export function estimateFrame(
     }
   }
 
-  // Skin cluster below the head top
   const searchBottom = Math.min(bottom, Math.round(headTop + bh * 0.4));
   let firstSkinRow = -1;
   for (let y = headTop; y <= searchBottom && firstSkinRow < 0; y++) {
@@ -104,7 +102,7 @@ export function estimateFrame(
         if (data[i + 3] >= 200 && isSkin(data[i], data[i + 1], data[i + 2]))
           (rowC++, (rowX += x));
       }
-      // Chin: where skin narrows into the neck (checked below eye level)
+      // The chin is where skin narrows into the neck, checked below eye level
       narrowRun = rowC < widest * 0.5 ? narrowRun + 1 : 0;
       if (y - firstSkinRow > h * 0.055 && narrowRun >= 3) break;
       widest = Math.max(widest, rowC);
@@ -114,14 +112,12 @@ export function estimateFrame(
       if (rowC) maxY = y;
     }
     if (c >= 12) {
-      // Hairline to chin
       const faceTop = (headTop + firstSkinRow * 2) / 3;
       const faceH = clamp(maxY - faceTop, h * 0.05, h * 0.22);
       return frame(cx / c, faceTop + faceH * 0.5, faceH, w, h);
     }
   }
 
-  // Silhouette fallback
   const faceH = clamp(Math.min(bh * 0.13, (x1 - x0) * 0.5), h * 0.05, h * 0.2);
   let hx = 0,
     hc = 0;
@@ -176,7 +172,6 @@ function analyse(img: HTMLImageElement): ArtFrame {
   );
 }
 
-/** Downscale, encode as WebP and auto-frame an uploaded image. */
 export async function processImage(blob: Blob): Promise<ArtAsset> {
   const img = await decode(blob);
   const scale = Math.min(1, MAX_SIDE / Math.max(img.width, img.height));
@@ -186,11 +181,10 @@ export async function processImage(blob: Blob): Promise<ArtAsset> {
   canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
 
   let src = canvas.toDataURL("image/webp", 0.9);
-  if (!src.startsWith("data:image/webp")) src = canvas.toDataURL("image/png"); // Safari fallback
+  if (!src.startsWith("data:image/webp")) src = canvas.toDataURL("image/png"); // Safari can't make WebP
   return { src, ...analyse(img), source: "upload" };
 }
 
-/** Reset a frame: built-in frame for built-in art, otherwise detection. */
 export async function autoFrame(name: string, a: ArtAsset): Promise<ArtAsset> {
   const { manual: _, ...rest } = a;
   const builtin = a.source === "builtin" ? builtinArt(name) : null;
@@ -202,7 +196,7 @@ export async function autoFrame(name: string, a: ArtAsset): Promise<ArtAsset> {
   }
 }
 
-// Built-in art (see `npm run publish:art`)
+// Built-in art comes from `npm run publish:art`
 
 type PublishedCharacter = {
   src: string;
@@ -213,7 +207,6 @@ type PublishedCharacter = {
 };
 const BUILTIN = published.characters as Record<string, PublishedCharacter>;
 
-/** "Roger Jr." → "roger-jr" */
 export function artSlug(name: string): string {
   return (
     rosterEntry(name)?.slug ??
@@ -246,7 +239,6 @@ const frameOf = (a: ArtAsset): ArtFrame => ({
   zoom: a.zoom,
 });
 
-/** Saved art over built-in art. Characters with neither are left out. */
 export function resolveArt(names: string[], saved: ArtLibrary): ArtLibrary {
   const out: ArtLibrary = {};
   for (const n of names) {
@@ -256,7 +248,7 @@ export function resolveArt(names: string[], saved: ArtLibrary): ArtLibrary {
   return out;
 }
 
-/** Keep uploads and hand crops; drop anything else (including art saved by older versions). */
+// Only keep uploads and hand-adjusted crops, and drop anything older versions saved.
 export function isKeptOverride(a: ArtAsset): boolean {
   if (typeof a.face !== "number") return false;
   return a.source === "upload" || (a.source === "builtin" && !!a.manual);
