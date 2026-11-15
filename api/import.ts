@@ -1,7 +1,7 @@
 // GET /api/import?url=<start.gg or Challonge link>
 //
 // Looks up a bracket's final top 8 with the site's own credentials (Vercel env vars STARTGG_TOKEN,
-// and CHALLONGE_CLIENT_ID + CHALLONGE_CLIENT_SECRET), so visitors only paste a link. Self-contained on purpose: Vercel runs
+// CHALLONGE_API_KEY, and CHALLONGE_CLIENT_ID + CHALLONGE_CLIENT_SECRET), so visitors only paste a link. Self-contained on purpose: Vercel runs
 // this file as an ES module without bundling, so it imports nothing local. Names, countries and
 // characters come back as the bracket site has them; the app maps them to its roster and flags.
 
@@ -94,9 +94,9 @@ export function formatDate(seconds: number | null | undefined, timeZone?: string
 const tidyGame = (name: string) => (/tekken\s*8/i.test(name) ? "Tekken 8" : name);
 const isTekken8 = (name: string) => /tekken\s*8/i.test(name);
 
-/** "TWIS | Arslan Ash" → ["TWIS", "Arslan Ash"] */
+/** "TWIS | Arslan Ash" → ["TWIS", "Arslan Ash"]; also the full-width ｜ and the Korean ㅣ people type for it */
 export function splitPrefix(name: string): [string, string] {
-  const m = name.match(/^(.{1,16}?)\s*\|\s*(.+)$/);
+  const m = name.match(/^(.{1,16}?)\s*[|｜ㅣ]\s*(.+)$/);
   return m ? [m[1].trim(), m[2].trim()] : ["", name.trim()];
 }
 
@@ -272,28 +272,29 @@ async function importStartgg(ref: Extract<BracketRef, { source: "startgg" }>, to
   return mapStartgg(event, picks);
 }
 
-// ───────────────────────── Challonge (API v2.1) ─────────────────────────
+// ───────────────────────── Challonge ─────────────────────────
 //
-// JSON:API at https://api.challonge.com/v2.1. The site authenticates as an OAuth application
-// (client credentials: CHALLONGE_CLIENT_ID + CHALLONGE_CLIENT_SECRET); an account's legacy API key
-// (CHALLONGE_API_KEY) also works on v2.1 with "Authorization-Type: v1".
+// Two routes, tried in this order:
+// 1. API v1 with the account's API key (CHALLONGE_API_KEY). Deprecated, but it's the only route
+//    that reads anyone's public bracket: v2.1 answers 404 for tournaments outside the account.
+// 2. API v2.1 as an OAuth app (CHALLONGE_CLIENT_ID + CHALLONGE_CLIENT_SECRET, client credentials).
+//    Reads brackets owned by the site's Challonge account or its communities.
 
-const CHALLONGE = "https://api.challonge.com/v2.1";
+const CHALLONGE_V1 = "https://api.challonge.com/v1";
+const CHALLONGE_V21 = "https://api.challonge.com/v2.1";
 const CHALLONGE_TOKEN = "https://api.challonge.com/oauth/token";
 const PER_PAGE = 100;
 const MAX_PAGES = 20;
+const NOT_FOUND = "Couldn't find that bracket on Challonge. Check the link, and that the bracket is public.";
 
 type ChallongeTournament = { name?: string | null; url?: string | null; game_name?: string | null; starts_at?: string | null; state?: string | null };
 type ChallongeParticipant = { name?: string | null; username?: string | null; final_rank?: number | null };
 type JsonApi<T> = { data?: { id: string; attributes?: T } | Array<{ id: string; attributes?: T }> | null };
+type ChallongeRef = Extract<BracketRef, { source: "challonge" }>;
 
-export type ChallongeAuth = { kind: "oauth"; clientId: string; clientSecret: string } | { kind: "key"; key: string };
+export type ChallongeAuth = { key?: string; app?: { clientId: string; clientSecret: string } };
 
-export function mapChallonge(
-  t: ChallongeTournament,
-  participants: ChallongeParticipant[],
-  link: { id: string; community?: string },
-): ImportedResults {
+export function mapChallonge(t: ChallongeTournament, participants: ChallongeParticipant[], link: { id: string; community?: string }): ImportedResults {
   const ranked = participants
     .filter((p): p is ChallongeParticipant & { final_rank: number } => typeof p.final_rank === "number" && p.final_rank > 0)
     .sort((a, b) => a.final_rank - b.final_rank);
@@ -315,7 +316,7 @@ export function mapChallonge(
     event: {
       name: t.name ?? "",
       game: tidyGame(t.game_name ?? ""),
-      date: t.starts_at ? formatDate(Date.parse(t.starts_at) / 1000) : "",
+      date: localDate(t.starts_at),
       location: "",
       entrants: participants.length ? String(participants.length) : "",
       url: link.community ? `${link.community}.challonge.com/${slug}` : `challonge.com/${slug}`,
@@ -326,66 +327,108 @@ export function mapChallonge(
   };
 }
 
+/** "2024-09-01T02:12:54+10:00" → "Sep 1, 2024": the date as it was where the event happened */
+export function localDate(iso: string | null | undefined): string {
+  const m = iso?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? formatDate(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 1000, "UTC") : "";
+}
+
+// ── v1 (account API key) ──
+
+type V1Tournament = {
+  name?: string;
+  url?: string;
+  game_name?: string | null;
+  started_at?: string | null;
+  start_at?: string | null;
+  state?: string;
+  participants?: Array<{ participant: { name?: string | null; display_name?: string | null; challonge_username?: string | null; final_rank?: number | null } }>;
+};
+
+/** v1's tournament (with participants) in the shape mapChallonge takes */
+export function fromV1(t: V1Tournament): [ChallongeTournament, ChallongeParticipant[]] {
+  return [
+    { name: t.name, url: t.url, game_name: t.game_name, starts_at: t.started_at ?? t.start_at, state: t.state },
+    (t.participants ?? []).map(({ participant: p }) => ({
+      name: p.display_name || p.name,
+      username: p.challonge_username,
+      final_rank: p.final_rank,
+    })),
+  ];
+}
+
+/** null: v1 can't serve this one (not found, key refused, or v1 switched off), so try v2.1 */
+async function challongeV1(ref: ChallongeRef, key: string): Promise<ImportedResults | "not-found" | "refused" | null> {
+  // v1 addresses community brackets as "<community>-<url>"
+  const id = ref.community ? `${ref.community}-${ref.id}` : ref.id;
+  const res = await fetch(`${CHALLONGE_V1}/tournaments/${encodeURIComponent(id)}.json?include_participants=1&api_key=${encodeURIComponent(key)}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (res.status === 404) return "not-found";
+  if (res.status === 401 || res.status === 403) return "refused";
+  if (res.status === 429) throw new ImportError("Challonge is limiting imports right now. Try again later.", 429);
+  if (!res.ok) return null;
+  const body = (await res.json().catch(() => null)) as { tournament?: V1Tournament } | null;
+  if (!body?.tournament) return null;
+  return mapChallonge(...fromV1(body.tournament), ref);
+}
+
+// ── v2.1 (OAuth app, client credentials) ──
+
 // Reused while the function instance stays warm; Challonge tokens last a week
 let cachedToken: { value: string; until: number } | null = null;
 
-async function challongeToken(clientId: string, clientSecret: string, fresh = false): Promise<string> {
+async function challongeToken(app: NonNullable<ChallongeAuth["app"]>, fresh = false): Promise<string> {
   if (!fresh && cachedToken && cachedToken.until > Date.now()) return cachedToken.value;
-  const request = (scope?: string) =>
-    fetch(CHALLONGE_TOKEN, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-      body: new URLSearchParams({
-        grant_type: "client_credentials",
-        client_id: clientId,
-        client_secret: clientSecret,
-        ...(scope ? { scope } : {}),
-      }),
-    });
-  // Ask for read access; if Challonge rejects the scope list, fall back to the app's default scope
-  let res = await request("me tournaments:read participants:read");
-  if (res.status === 400) res = await request();
+  const res = await fetch(CHALLONGE_TOKEN, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body: new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: app.clientId,
+      client_secret: app.clientSecret,
+      scope: "me tournaments:read participants:read",
+    }),
+  });
   const body = (await res.json().catch(() => null)) as { access_token?: string; expires_in?: number } | null;
   if (!res.ok || !body?.access_token) throw new ImportError("Challonge didn't accept the site's app credentials.", 502);
   cachedToken = { value: body.access_token, until: Date.now() + Math.max(60, (body.expires_in ?? 3600) - 300) * 1000 };
   return body.access_token;
 }
 
-async function challongeGet<T>(path: string, auth: ChallongeAuth, community?: string): Promise<JsonApi<T>> {
-  const url = new URL(`${CHALLONGE}${path}`);
+async function v21Get<T>(path: string, app: NonNullable<ChallongeAuth["app"]>, community?: string): Promise<JsonApi<T>> {
+  const url = new URL(`${CHALLONGE_V21}${path}`);
   if (community) url.searchParams.set("community_id", community);
   const send = async (fresh: boolean) =>
     fetch(url, {
       headers: {
         "Content-Type": "application/vnd.api+json",
         Accept: "application/json",
-        ...(auth.kind === "oauth"
-          ? { "Authorization-Type": "v2", Authorization: `Bearer ${await challongeToken(auth.clientId, auth.clientSecret, fresh)}` }
-          : { "Authorization-Type": "v1", Authorization: auth.key }),
+        "Authorization-Type": "v2",
+        Authorization: `Bearer ${await challongeToken(app, fresh)}`,
       },
     });
   let res = await send(false);
   // A cached token can be revoked early: get a new one once
-  if (res.status === 401 && auth.kind === "oauth") res = await send(true);
-  if (res.status === 404) throw new ImportError("Couldn't find that bracket on Challonge. Check the link, and that the bracket is public.", 404);
-  if (res.status === 401 || res.status === 403)
-    throw new ImportError("Challonge didn't let the site read that bracket. It may be private.", 502);
+  if (res.status === 401) res = await send(true);
+  // v2.1 answers 403 for other people's communities and 404 for other people's brackets
+  if (res.status === 404 || res.status === 403) throw new ImportError(NOT_FOUND, 404);
+  if (res.status === 401) throw new ImportError("Challonge didn't accept the site's app credentials.", 502);
   if (res.status === 429) throw new ImportError("Challonge is limiting imports right now. Try again later.", 429);
   if (!res.ok) throw new ImportError(`Challonge didn't answer as expected (HTTP ${res.status}).`, 502);
   return (await res.json()) as JsonApi<T>;
 }
 
-async function importChallonge(ref: Extract<BracketRef, { source: "challonge" }>, auth: ChallongeAuth): Promise<ImportedResults> {
-  const id = encodeURIComponent(ref.id);
-  const tournament = await challongeGet<ChallongeTournament>(`/tournaments/${id}.json`, auth, ref.community);
+async function challongeV21(ref: ChallongeRef, app: NonNullable<ChallongeAuth["app"]>): Promise<ImportedResults> {
+  const tournament = await v21Get<ChallongeTournament>(`/tournaments/${encodeURIComponent(ref.id)}.json`, app, ref.community);
   const t = Array.isArray(tournament.data) ? tournament.data[0] : tournament.data;
   if (!t) throw new ImportError("Challonge sent back something unexpected.", 502);
   // Every page: final ranks aren't in seed order
   const participants: ChallongeParticipant[] = [];
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const res = await challongeGet<ChallongeParticipant>(
+    const res = await v21Get<ChallongeParticipant>(
       `/tournaments/${encodeURIComponent(t.id)}/participants.json?page=${page}&per_page=${PER_PAGE}`,
-      auth,
+      app,
       ref.community,
     );
     const rows = Array.isArray(res.data) ? res.data : [];
@@ -395,11 +438,22 @@ async function importChallonge(ref: Extract<BracketRef, { source: "challonge" }>
   return mapChallonge(t.attributes ?? {}, participants, ref);
 }
 
+async function importChallonge(ref: ChallongeRef, auth: ChallongeAuth): Promise<ImportedResults> {
+  const v1 = auth.key ? await challongeV1(ref, auth.key) : null;
+  if (v1 && typeof v1 === "object") return v1;
+  if (auth.app) return challongeV21(ref, auth.app);
+  if (v1 === "refused") throw new ImportError("Challonge didn't accept the site's API key.", 502);
+  if (v1 === "not-found") throw new ImportError(NOT_FOUND, 404);
+  throw new ImportError("Challonge didn't answer as expected. Try again in a moment.", 502);
+}
+
 function challongeAuth(): ChallongeAuth | null {
   const e = env();
-  if (e.CHALLONGE_CLIENT_ID && e.CHALLONGE_CLIENT_SECRET)
-    return { kind: "oauth", clientId: e.CHALLONGE_CLIENT_ID, clientSecret: e.CHALLONGE_CLIENT_SECRET };
-  return e.CHALLONGE_API_KEY ? { kind: "key", key: e.CHALLONGE_API_KEY } : null;
+  const auth: ChallongeAuth = {
+    key: e.CHALLONGE_API_KEY || undefined,
+    app: e.CHALLONGE_CLIENT_ID && e.CHALLONGE_CLIENT_SECRET ? { clientId: e.CHALLONGE_CLIENT_ID, clientSecret: e.CHALLONGE_CLIENT_SECRET } : undefined,
+  };
+  return auth.key || auth.app ? auth : null;
 }
 
 // ───────────────────────── Handler ─────────────────────────

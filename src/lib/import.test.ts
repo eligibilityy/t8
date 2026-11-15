@@ -163,6 +163,8 @@ describe("import helpers", () => {
   it("splits prefixes only when there is one", () => {
     expect(splitPrefix("TWIS | Arslan Ash")).toEqual(["TWIS", "Arslan Ash"]);
     expect(splitPrefix("Knee")).toEqual(["", "Knee"]);
+    expect(splitPrefix("GPㅣMiks20z")).toEqual(["GP", "Miks20z"]);
+    expect(splitPrefix("RB ｜ Arslan")).toEqual(["RB", "Arslan"]);
   });
   it("formats dates in the event's timezone", () => {
     expect(formatDate(1782604800, "Asia/Manila")).toBe("Jun 28, 2026");
@@ -208,13 +210,13 @@ describe("import helpers", () => {
   });
 });
 
-describe("Challonge requests (v2.1, client credentials)", () => {
+describe("Challonge requests", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
   });
 
-  it("gets a token, sends v2 headers with community_id, reads every participant page", async () => {
+  it("with only app credentials: gets a token, sends v2 headers with community_id, reads every page", async () => {
     vi.stubEnv("CHALLONGE_CLIENT_ID", "cid");
     vi.stubEnv("CHALLONGE_CLIENT_SECRET", "secret");
     const calls: Array<{ url: string; init?: RequestInit }> = [];
@@ -260,18 +262,56 @@ describe("Challonge requests (v2.1, client credentials)", () => {
     expect(data.filter((c) => c.url.includes("/tournaments/777/participants.json")).map((c) => new URL(c.url).searchParams.get("page"))).toEqual(["1", "2"]);
   });
 
-  it("falls back to a legacy API key with v1-style auth on v2.1", async () => {
+  it("reads public brackets through v1 with the API key first", async () => {
     vi.stubEnv("CHALLONGE_API_KEY", "legacy");
-    const seen: Headers[] = [];
-    vi.stubGlobal("fetch", async (input: string | URL, init?: RequestInit) => {
-      seen.push(new Headers(init?.headers));
-      const url = String(input);
-      if (url.includes("/participants.json")) return new Response(JSON.stringify({ data: [{ id: "1", attributes: { name: "Solo", final_rank: 1 } }] }));
-      return new Response(JSON.stringify({ data: { id: "5", attributes: { name: "T", url: "abc" } } }));
+    vi.stubEnv("CHALLONGE_CLIENT_ID", "cid");
+    vi.stubEnv("CHALLONGE_CLIENT_SECRET", "secret");
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", async (input: string | URL) => {
+      urls.push(String(input));
+      const participant = (display_name: string, final_rank: number) => ({ participant: { name: "x", display_name, final_rank } });
+      return new Response(
+        JSON.stringify({
+          tournament: {
+            name: "Team Tournament",
+            url: "TekkenTeams",
+            game_name: "TEKKEN 8",
+            started_at: "2024-09-01T02:12:54.136+10:00",
+            state: "complete",
+            participants: [participant("GPㅣMiks20z", 2), participant("Team Alisa", 1)],
+          },
+        }),
+      );
     });
-    const res = await GET(new Request("http://x/api/import?url=challonge.com%2Fabc"));
+    const res = await GET(new Request("http://x/api/import?url=" + encodeURIComponent("https://saltyeu.challonge.com/TekkenTeams")));
+    const body = await res.json();
     expect(res.status).toBe(200);
-    expect(seen.every((h) => h.get("Authorization-Type") === "v1" && h.get("Authorization") === "legacy")).toBe(true);
+    expect(urls).toHaveLength(1);
+    const v1 = new URL(urls[0]);
+    expect(v1.pathname).toBe("/v1/tournaments/saltyeu-TekkenTeams.json");
+    expect(v1.searchParams.get("api_key")).toBe("legacy");
+    expect(body.players.map((p: { prefix: string; tag: string }) => `${p.prefix}|${p.tag}`)).toEqual(["|Team Alisa", "GP|Miks20z"]);
+    // Started 02:12 on Sep 1 in Australia (still Aug 31 in UTC): use the event's own date
+    expect(body.event).toMatchObject({ game: "Tekken 8", url: "saltyeu.challonge.com/TekkenTeams", date: "Sep 1, 2024" });
+  });
+
+  it("falls back to v2.1 when v1 doesn't have the bracket", async () => {
+    vi.stubEnv("CHALLONGE_API_KEY", "legacy");
+    vi.stubEnv("CHALLONGE_CLIENT_ID", "cid");
+    vi.stubEnv("CHALLONGE_CLIENT_SECRET", "secret");
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", async (input: string | URL) => {
+      const url = String(input);
+      urls.push(url);
+      if (url.includes("/v1/")) return new Response("{}", { status: 404 });
+      if (url.endsWith("/oauth/token")) return new Response(JSON.stringify({ access_token: "t", expires_in: 604800 }));
+      if (url.includes("/participants.json")) return new Response(JSON.stringify({ data: [{ id: "1", attributes: { name: "Mine", final_rank: 1 } }] }));
+      return new Response(JSON.stringify({ data: { id: "9", attributes: { name: "My private bracket", url: "mine" } } }));
+    });
+    const res = await GET(new Request("http://x/api/import?url=challonge.com%2Fmine"));
+    expect(res.status).toBe(200);
+    expect((await res.json()).event.name).toBe("My private bracket");
+    expect(urls.some((u) => u.includes("/v2.1/tournaments/mine.json"))).toBe(true);
   });
 
   it("explains private or missing brackets", async () => {

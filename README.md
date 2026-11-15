@@ -59,11 +59,12 @@ npm run sync:roster  # update roster names from Wavu Wiki
 | Variable | Where to get it |
 |---|---|
 | `STARTGG_TOKEN` | start.gg → Developer Settings → Personal Access Tokens |
-| `CHALLONGE_CLIENT_ID`, `CHALLONGE_CLIENT_SECRET` | Challonge Developer Portal ([connect.challonge.com](https://connect.challonge.com)) → your app |
+| `CHALLONGE_API_KEY` | challonge.com → Settings → Developer API (account API key) |
+| `CHALLONGE_CLIENT_ID`, `CHALLONGE_CLIENT_SECRET` | Challonge Developer Portal ([connect.challonge.com](https://connect.challonge.com)) → your app (optional) |
 
-Challonge uses API v2.1 with the app's client credentials. A legacy account key in `CHALLONGE_API_KEY` also works if the client ID and secret aren't set.
+Challonge needs the account API key: API v2.1 only returns brackets owned by your Challonge account or its communities, so public brackets from other organisers are read through the older v1 API with that key. The v2.1 app credentials are a fallback for brackets on your own account (including private ones) if v1 can't find them. If Challonge switches v1 off, only your own brackets will import.
 
-start.gg allows about 80 requests a minute per token; an import uses 2 or 3. Challonge's free API tier allows 500 requests a month; an import uses 2 for brackets up to 100 entrants, plus one per extra 100. Repeat lookups of the same link within a minute are answered from Vercel's cache.
+start.gg allows about 80 requests a minute per token; an import uses 2 or 3. Challonge's free API tier allows 500 requests a month; an import usually uses 1. Repeat lookups of the same link within a minute are answered from Vercel's cache.
 
 To do
 --------
